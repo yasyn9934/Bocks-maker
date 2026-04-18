@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدليل التفاعلي الشامل لمحرك الكتب الملكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #b8860b;
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --global-page-bg: #FFFDD0;
+        }
+        body {
+            font-family: 'Amiri', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px 20px;
+        }
+        h1.main-title {
+            text-align: center;
+            font-family: 'Aref Ruqaa', serif;
+            color: var(--primary);
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        p.main-desc {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+            color: #555;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        .feature-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+            padding: 30px;
+            border-top: 5px solid var(--primary);
+            position: relative;
+        }
+        .feature-card h2 {
+            font-family: 'Aref Ruqaa', serif;
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 2em;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 10px;
+        }
+        .desc-box {
+            background: #fdfbf7;
+            padding: 15px;
+            border-right: 4px solid var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+        code {
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #d32f2f;
+            direction: ltr;
+            display: inline-block;
+        }
+        .demo-area, .interactive-area { margin-top: 25px; }
+        .demo-area h3, .interactive-area h3 {
+            font-family: 'Aref Ruqaa', serif;
+            color: #6B8E23;
+            font-size: 1.5em;
+        }
+        .result-box {
+            border: 1px solid #dcdde1;
+            padding: 20px;
+            border-radius: 8px;
+            background: #fff;
+            min-height: 50px;
+            position: relative;
+            overflow: hidden;
+            font-size: 1.2em;
+        }
+        .theme-preview-box {
+            width: 100%; height: 353px; max-width: 250px;
+            border: 1px solid #ccc; margin: 10px auto;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-family: 'Aref Ruqaa', serif; font-size: 1.5em; color: #333;
+            background-color: var(--global-page-bg);
+            transition: all 0.3s; background-size: cover; background-position: center;
+        }
+        textarea, input[type="text"] {
+            width: 100%; padding: 15px; font-family: 'Amiri', serif; font-size: 1.2em;
+            border: 1px solid #ccc; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box;
+        }
+        textarea { height: 100px; resize: vertical; }
+        button {
+            background: var(--primary); color: white; border: none; padding: 10px 25px;
+            font-family: 'Aref Ruqaa', serif; font-size: 1.2em; border-radius: 6px; cursor: pointer; transition: 0.3s;
+        }
+        button:hover { background: #9a7008; }
+        select, input[type="color"] {
+            padding: 10px; font-family: 'Amiri', serif; font-size: 1.1em; border-radius: 6px;
+        }
+        .smart-panel-mock {
+            background: #fdfdfd; border-top: 4px solid #b8860b; border-bottom: 4px solid #b8860b;
+            padding: 15px; margin-top: 10px; font-family: 'Amiri', serif; display: none;
+        }
+        .quran-grid { display: grid; grid-template-columns: 3fr 1fr 1fr; gap: 10px; border-bottom: 1px solid #eee; padding: 5px 0; }
+        .hadith-grid { display: grid; grid-template-columns: 3fr 1.5fr 1.5fr 1fr; gap: 10px; border-bottom: 1px solid #eee; padding: 5px 0; }
+        
+        .mock-focus {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #fcfcfc; z-index: 9999; display: none; padding: 40px; box-sizing: border-box;
+        }
+        .mock-focus textarea { height: 80vh; font-size: 24pt; border: none; box-shadow: none; outline: none; background: transparent; }
+        .close-focus { position: absolute; top: 20px; left: 20px; background: #d32f2f; }
+    </style>
+</head>
+<body>
+
+    <h1 class="main-title">الدليل التفاعلي الشامل لمحرك الكتب الملكي</h1>
+    <p class="main-desc">هذا الدليل يحاكي كافة إمكانيات المحرك بدقة. جرب الأكواد، استخدم لوحة التحكم، وشاهد النتائج الفورية مطابقة للموقع الأصلي.</p>
+
+    <div class="container" id="features-container"></div>
+
+    <div id="mockFocusMode" class="mock-focus">
+        <button class="close-focus" onclick="document.getElementById('mockFocusMode').style.display='none'">إنهاء التركيز ✖</button>
+        <textarea placeholder="أنت الآن في وضع التركيز. المساحة كلها لك للكتابة بلا مشتتات..."></textarea>
+    </div>
+
+    <script>
+        // قاعدة البيانات الوهمية للخزنة في الدليل
+        let mediaVault = {
+            'صورة_تجريبية': { type: 'image', data: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/200px-Google_2015_logo.svg.png' }
+        };
+
+        const RoyalFeatures = {
+            advancedQuotes: {
+                css: `
+                .royal-quote-box { margin: 0 auto 25px auto; padding: 20px 25px; border: 1px solid rgba(184, 134, 11, 0.2); border-right: 8px solid #b8860b; border-radius: 12px; background-color: #fcfcfc; display: flex; flex-direction: column; gap: 15px; max-width: 98%; box-shadow: 0 4px 12px rgba(0,0,0,0.03); box-sizing: border-box; }
+                .royal-quote-text { font-size: 1.35em; line-height: 1.8; font-weight: bold; font-family: 'Amiri', serif; width: 100%; text-align: justify; color: #2c3e50; }
+                .royal-quote-footer { display: flex; justify-content: space-between; align-items: center; border-top: 2.5px solid #b8860b; padding-top: 12px; margin-top: 5px; }
+                .royal-quote-source { font-family: 'Aref Ruqaa', serif; color: #4a3f35; font-size: 1.1em; flex: 1; padding-left: 15px; }
+                .royal-quote-qr-cell { border-right: 2.5px solid #b8860b; padding-right: 15px; display: flex; flex-direction: column; align-items: center; }
+                .royal-quote-qr { width: 85px; height: 85px; background: #fff; padding: 4px; border-radius: 4px; }
+                `,
+                execute: function(text) {
+                    if (!text) return "";
+                    return text.replace(/\[«([\s\S]+?)»\]\{([\s\S]*?)\}\[اقتباس:\s*([\s\S]*?)\]/g, (match, quote, source, options) => {
+                        let qrHtml = "";
+                        let cleanOptions = options.replace(/<br>/gi, ' ');
+                        let cleanSource = source.replace(/<br>/gi, ' ');
+                        let docMatch = cleanOptions.match(/\(وثيقة\)\s*([^,\]]+)/);
+                        if (docMatch) {
+                            let url = docMatch[1].trim();
+                            if (url && !url.startsWith('http')) url = 'https://' + url;
+                            let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+                            qrHtml = `<div class="royal-quote-qr-cell"><img src="${qrUrl}" class="royal-quote-qr" /><span style="font-size:0.7em; color:#b8860b; font-weight:bold; margin-top:5px;">وثيقة الاقتباس</span></div>`;
+                        }
+                        return `<div class="royal-quote-box"><div class="royal-quote-text">&#171; ${quote} &#187;</div><div class="royal-quote-footer"><div class="royal-quote-source"><b>المصدر:</b><br>${cleanSource}</div>${qrHtml}</div></div>`;
+                    });
+                }
+            },
+            advancedFormatting: {
+                css: "",
+                execute: function(text) {
+                    if (!text) return "";
+                    return text.replace(/\{([^}]+)\}\[تنسيق:\s*([^\]]+)\]/g, (match, content, formats) => {
+                        let styles = [];
+                        let fontMatch = formats.match(/\(خط\)\s*([^,]+)/);
+                        if (fontMatch) styles.push(`font-family: '${fontMatch[1].trim()}', serif`);
+                        let colorMatch = formats.match(/\(لون\)\s*([a-zA-Z0-9#]+)/);
+                        if (colorMatch) {
+                            let colorVal = colorMatch[1].trim();
+                            if (!colorVal.startsWith('#')) colorVal = '#' + colorVal;
+                            styles.push(`color: ${colorVal}`);
+                        }
+                        let decoMatch = formats.match(/\(تمييز النص\)\s*([^,\]]+)/);
+                        if (decoMatch) {
+                            let decos = decoMatch[1].split('+');
+                            let textDecoration = [];
+                            decos.forEach(d => {
+                                let t = d.trim();
+                                if (t === 'سميك') styles.push('font-weight: bold');
+                                if (t === 'مائل') styles.push('font-style: italic');
+                                if (t === 'خط أسفل') textDecoration.push('underline');
+                                if (t === 'مشطوب') textDecoration.push('line-through');
+                                if (t === 'خط أعلى') textDecoration.push('overline');
+                            });
+                            if (textDecoration.length > 0) styles.push(`text-decoration: ${textDecoration.join(' ')}`);
+                        }
+                        return `<span style="${styles.join('; ')}">${content}</span>`;
+                    });
+                }
+            },
+            themes: {
+                css: `
+                .style-islamic { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="250" height="353" viewBox="0 0 250 353"><rect x="15" y="15" width="220" height="323" fill="none" stroke="%23b8860b" stroke-width="1.5" opacity="0.5"/><path d="M15,40 L40,15 M235,40 L210,15 M15,313 L40,338 M235,313 L210,338" stroke="%23b8860b" stroke-width="1.5" opacity="0.5"/></svg>'); background-size: 100% 100%; }
+                .style-classic { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="250" height="353" viewBox="0 0 250 353"><rect x="10" y="10" width="230" height="333" fill="none" stroke="%234a3f35" stroke-width="1" opacity="0.6"/><rect x="15" y="15" width="220" height="323" fill="none" stroke="%234a3f35" stroke-width="0.5" opacity="0.6"/><circle cx="15" cy="15" r="2.5" fill="%234a3f35" opacity="0.6"/><circle cx="235" cy="15" r="2.5" fill="%234a3f35" opacity="0.6"/><circle cx="15" cy="338" r="2.5" fill="%234a3f35" opacity="0.6"/><circle cx="235" cy="338" r="2.5" fill="%234a3f35" opacity="0.6"/></svg>'); background-size: 100% 100%; }
+                .style-floral { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="250" height="353" viewBox="0 0 250 353"><g fill="none" stroke="%236B8E23" stroke-width="0.8" opacity="0.4"><path d="M20,40 Q20,20 40,20 T80,20 M20,40 Q20,60 20,80" /><path d="M230,40 Q230,20 210,20 T170,20 M230,40 Q230,60 230,80" /><path d="M20,313 Q20,333 40,333 T80,333 M20,313 Q20,293 20,273" /><path d="M230,313 Q230,333 210,333 T170,333 M230,313 Q230,293 230,273" /></g></svg>'); background-size: 100% 100%; }
+                .style-royal { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="250" height="353" viewBox="0 0 250 353"><rect x="10" y="10" width="230" height="333" rx="2" stroke="%23b8860b" stroke-width="1" fill="none" opacity="0.3"/><rect x="15" y="15" width="220" height="323" rx="1" stroke="%23b8860b" stroke-width="0.5" fill="none" opacity="0.2"/></svg>'); background-size: 100% 100%; }
+                .style-minimal { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="250" height="353" viewBox="0 0 250 353"><g fill="%236B8E23" opacity="0.2"><circle cx="15" cy="176" r="2"/><circle cx="235" cy="176" r="2"/></g></svg>'); background-size: 100% 100%; }
+                .style-clean { background-image: none !important; }
+                `,
+                execute: function(text) { return text; }
+            },
+            tocAndFootnotes: {
+                css: ".footnote-ref { color: #d32f2f; font-size: 0.65em; vertical-align: super; font-weight: bold; }",
+                execute: function(text, footnoteList) {
+                    if (!text) return "";
+                    let tempFns = footnoteList || [];
+                    return text.replace(/\(\((.*?)\)\)/g, (match, content) => {
+                        tempFns.push(content);
+                        return `<sup class="footnote-ref">[${tempFns.length}]</sup> <span style="font-size:0.7em; color:gray;">(الحاشية: ${content})</span>`;
+                    });
+                }
+            },
+            islamicSymbols: {
+                css: ".islamic-symbol { font-family: 'Aref Ruqaa'; color: #b8860b; font-size: 1.2em; }",
+                execute: function(text) {
+                    if (!text) return "";
+                    let res = text.replace(/\(صل\)/g, '<span class="islamic-symbol">ﷺ</span>');
+                    res = res.replace(/\(جل\)/g, '<span class="islamic-symbol">ﷻ</span>');
+                    res = res.replace(/\(رض\)/g, '<span style="font-size: 0.8em; color: #555;">رضي الله عنه</span>');
+                    res = res.replace(/\(رح\)/g, '<span style="font-size: 0.8em; color: #555;">رحمه الله</span>');
+                    return res;
+                }
+            },
+            brackets: {
+                css: ".gold-bracket { color: #b8860b; font-weight: bold; } .quran-text { color: #2c5e2e; font-weight: bold; } .quote-text { color: #0077be; font-weight: bold; }",
+                execute: function(text) {
+                    if (!text) return "";
+                    let res = text.replace(/(\uFD3F)(.*?)(\uFD3E)/g, '<span class="gold-bracket">$1</span><span class="quran-text">$2</span><span class="gold-bracket">$3</span>');
+                    res = res.replace(/(«)(.*?)(»)/g, '<span class="gold-bracket">$1</span><span class="quote-text">$2</span><span class="gold-bracket">$3</span>');
+                    return res;
+                }
+            },
+            dividers: {
+                css: ".gold-divider { color: #b8860b; font-weight: bold; display: block; text-align: center; margin: 10px 0; }",
+                execute: function(text) {
+                    if (!text) return "";
+                    return text.replace(/([\u2022]*[\u0640]{3,}[\u2022]*)/g, '<span class="gold-divider">$1</span>');
+                }
+            },
+            smartMedia: {
+                css: ".smart-link { color: #1E90FF; text-decoration: none; font-weight: bold; }", 
+                execute: function(text) {
+                    if (!text) return "";
+                    let res = text.replace(/\{([^}]+)\}\[حجم:\s*(\d+)\]/g, '<span style="font-size: $2pt">$1</span>');
+                    res = res.replace(/\{([^}]+)\}\[رابط:\s*([^\]]+)\]/g, (match, content, url) => {
+                        let link = url.trim().startsWith('http') ? url.trim() : 'https://' + url.trim();
+                        return `<a href="${link}" target="_blank" class="smart-link">${content}</a>`;
+                    });
+                    res = res.replace(/\{(\d+)\}\[صورة:\s*([^\]]+)\]/g, '<img src="$2" style="width: $1px; max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 15px auto; border:2px solid #eee;" />');
+                    return res;
+                }
+            },
+            inlineHeaders: {
+                css: ".inline-header { font-family: 'Aref Ruqaa'; font-size: 34pt; color: #4a3f35; display: block; text-align: center; margin: 20px 0; line-height: 1.2; }",
+                execute: function(text) {
+                    if (!text) return "";
+                    let res = text.replace(/\+\-(.*?)\-\+/g, '<span class="inline-header">$1</span>');
+                    res = res.replace(/\+(.*?)\+/g, '<span class="inline-header">$1</span>');
+                    return res;
+                }
+            },
+            colorsAndBackgrounds: {
+                css: ".color-box { padding: 2px 5px; border-radius: 4px; }",
+                execute: function(text) {
+                    if (!text) return "";
+                    const colorMap = { '🟢': '#2c5e2e', '🔴': '#d32f2f', '🟠': '#ef6c00', '🟡': '#fbc02d', '🔵': '#1976d2', '🟣': '#7b1fa2', '🟤': '#5d4037', '⚫': '#000000', '⚪': '#ffffff' };
+                    const bgMap = { '🟩': '#c8e6c9', '🟥': '#ffcdd2', '🟧': '#ffe0b2', '🟨': '#fff9c4', '🟦': '#bbdefb', '🟪': '#e1bee7', '🟫': '#d7ccc8', '⬛': '#333333', '⬜': '#ffffff' };
+                    let res = text;
+                    Object.keys(colorMap).forEach(e => { res = res.replace(new RegExp(`${e}(.*?)${e}`, 'g'), `<span style="color:${colorMap[e]}">$1</span>`); });
+                    Object.keys(bgMap).forEach(e => { res = res.replace(new RegExp(`${e}(.*?)${e}`, 'g'), `<span class="color-box" style="background-color:${bgMap[e]}">$1</span>`); });
+                    return res;
+                }
+            }
+        };
+
+        let styleTag = document.createElement('style');
+        for(let f in RoyalFeatures) { styleTag.innerHTML += RoyalFeatures[f].css + '\n'; }
+        document.head.appendChild(styleTag);
+
+        // وظيفة تنفيذ كافة التأثيرات
+        function applyAllStyles(text) {
+            let res = text;
+            for(let f in RoyalFeatures) { res = RoyalFeatures[f].execute(res, []); }
+            
+            // إضافة معالجة خزنة الوسائط المشفرة (Media Vault)
+            res = res.replace(/\{وسائط:\s*(.*?)\}/g, (match, key) => {
+                let media = mediaVault[key.trim()];
+                if(!media) return '<span style="color:red; font-weight:bold;">[وسائط مفقودة: '+key+']</span>';
+                if(media.type === 'image') return '<img src="'+media.data+'" style="max-width:100%; border-radius:8px; display:block; margin:10px auto;">';
+                if(media.type === 'video') return '<video src="'+media.data+'" controls style="max-width:100%; border-radius:8px; display:block; margin:10px auto;"></video>';
+                if(media.type === 'audio') return '<audio src="'+media.data+'" controls style="width:100%; margin:10px auto;"></audio>';
+                return match;
+            });
+            
+            res = res.replace(/\n/g, '<br>');
+            return res;
+        }
+
+        const featuresMeta = {
+            advancedQuotes: { group: 1, title: "1. الاقتباسات الموثقة", desc: "مربع احترافي لعرض الاقتباسات مع المصدر وتوليد باركود تلقائي يوجه القارئ للرابط.", usage: "[«النص»]{المصدر}[اقتباس: (وثيقة) الرابط]", example: "[«إنما النحو قياس يتبع، وبه في كل أمر ينتفع»]{قصيدة في النحو}[اقتباس: (وثيقة) https://example.com]" },
+            advancedFormatting: { group: 1, title: "2. التنسيق المخصص للنصوص", desc: "تحكم دقيق في الخط، اللون، وتأثيرات النص.", usage: "{النص}[تنسيق: (خط) الخط, (لون) اللون, (تمييز النص) سميك+مائل+مشطوب]", example: "{باب الإعراب}[تنسيق: (لون) #b8860b, (تمييز النص) سميك+خط أسفل]" },
+            themes: { group: 1, title: "3. أنماط الزخارف (Themes)", desc: "يمنحك إطارات وزخارف كلاسيكية وإسلامية ونباتية لتزيين الصفحات.", type: "theme" },
+            tocAndFootnotes: { group: 1, title: "4. الحواشي السفلية (Footnotes)", desc: "كتابة الحواشي بسهولة عبر الأقواس المزدوجة.", usage: "((نص الحاشية))", example: "قال ابن مالك في الألفية((كتاب الخلاصة في النحو)) كلاماً نفيساً." },
+            islamicSymbols: { group: 1, title: "5. الرموز الإسلامية", desc: "تحويل الرموز المختصرة إلى خطوط إسلامية مزخرفة.", usage: "(صل) ، (جل) ، (رض) ، (رح)", example: "قال رسول الله (صل): ... والله (جل) يقول." },
+            brackets: { group: 1, title: "6. الأقواس المقدسة والتنصيص", desc: "تلوين الأقواس القرآنية وعلامات التنصيص.", usage: "﴿الآية﴾ ، «النص المقتبس»", example: "قال تعالى: ﴿إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ﴾، وفي الحديث «الأعمال بالنيات»." },
+            dividers: { group: 1, title: "7. الفواصل الذهبية", desc: "إنشاء فواصل أنيقة بين الفقرات.", usage: "--- أو •••---•••", example: "نهاية الفصل\n•••---•••\nبداية الفصل" },
+            smartMedia: { group: 1, title: "8. الوسائط والروابط الذكية", desc: "التحكم بحجم النص، إدراج روابط، أو عرض صور خارجية.", usage: "{النص}[حجم: الرقم] ، {النص}[رابط: الرابط] ، {العرض}[صورة: الرابط]", example: "{نص بحجم 30}[حجم: 30]\n{اضغط لزيارة جوجل}[رابط: google.com]\n{200}[صورة: https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/200px-Google_2015_logo.svg.png]" },
+            inlineHeaders: { group: 1, title: "9. العناوين الداخلية الملكية", desc: "تنسيق العناوين بخط الرقعة البارز.", usage: "+-العنوان-+ أو +العنوان+", example: "+- المبحث الأول -+" },
+            colorsAndBackgrounds: { group: 1, title: "10. الألوان بالرموز التعبيرية", desc: "تلوين النصوص أو خلفياتها باستخدام الرموز التعبيرية الملونة.", usage: "🔴نص🔴 و 🟩خلفية🟩", example: "هذا 🔴نص أحمر🔴 و 🟨خلفية صفراء🟨." },
+            
+            // الميزات الهيكلية والأنظمة الذكية
+            mediaVault: { group: 2, title: "11. خزنة الوسائط المشفرة", desc: "حفظ واستدعاء (الصور، الفيديو، الصوت) من قاعدة البيانات المحلية للمحرك بدلاً من الروابط الخارجية لتجنب فقدانها.", type: "vault" },
+            smartSearch: { group: 2, title: "12. البحث الذكي (القرآن والحديث)", desc: "محرك مدمج يجلب الآيات من المصحف عند فتح ﴿ ﴾ والأحاديث من الدرر السنية عند فتح « ».", type: "search" },
+            pageColors: { group: 2, title: "13. إدارة لون الورق والخلفيات", desc: "تحكم شامل في لون صفحات الكتاب ككل، وإمكانية وضع صور خلفية محددة لصفحات بعينها.", type: "colors" },
+            focusMode: { group: 2, title: "14. وضع التركيز 🎯", desc: "يخفي جميع إعدادات واجهة المحرك ليمنحك مساحة خالية تماماً للكتابة والتركيز العميق.", type: "focus" },
+            exportSystem: { group: 2, title: "15. نظام التصدير الذكي", desc: "تصدير بصيغة (.rbook) لتعديله لاحقاً، أو توليد تطبيق قراءة تفاعلي (HTML) متكامل فهرس وحواشي.", type: "export" }
+        };
+
+        const container = document.getElementById('features-container');
+
+        for(let key in featuresMeta) {
+            let meta = featuresMeta[key];
+            let html = `<div class="feature-card" id="card-${key}">
+                <h2>${meta.title}</h2>
+                <div class="desc-box"><p>${meta.desc}</p>`;
+            
+            if(meta.usage) html += `<p><b>الصيغة:</b> <code dir="ltr">${meta.usage}</code></p>`;
+            html += `</div>`;
+
+            if(meta.type === "theme") {
+                html += `
+                <div class="interactive-area">
+                    <h3>التطبيق التفاعلي:</h3>
+                    <select id="input-${key}" onchange="document.getElementById('result-${key}').className='theme-preview-box ' + this.value">
+                        <option value="style-islamic">زخرفة إسلامية</option>
+                        <option value="style-classic">إطار كلاسيكي</option>
+                        <option value="style-floral">زخرفة نباتية</option>
+                        <option value="style-royal">إطار ملكي</option>
+                        <option value="style-minimal">زخرفة هادئة</option>
+                        <option value="style-clean">بدون زخرفة</option>
+                    </select>
+                    <div id="result-${key}" class="theme-preview-box style-islamic">معاينة الصفحة</div>
+                </div>`;
+            } else if (meta.type === "vault") {
+                html += `
+                <div class="interactive-area">
+                    <h3>ارفع وسائط جديدة (صورة، صوت، فيديو) وجرب استخدامها:</h3>
+                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                        <input type="text" id="vaultKey" placeholder="اكتب رمزاً هنا (مثال: شعار)">
+                        <input type="file" id="vaultFile" accept="image/*,audio/*,video/*" style="display:none" onchange="addMockVault(event)">
+                        <button onclick="document.getElementById('vaultFile').click()">تشفير وحفظ 📥</button>
+                    </div>
+                    <textarea id="input-${key}">هذا استدعاء لوسائط تم رفعها مسبقاً:\n{وسائط: صورة_تجريبية}</textarea>
+                    <button onclick="testFeature('${key}')">تطبيق التنسيق 🪄</button>
+                    <div class="result-box" id="result-${key}" style="margin-top: 15px; display:block;">
+                        ` + applyAllStyles("هذا استدعاء لوسائط تم رفعها مسبقاً:\n{وسائط: صورة_تجريبية}") + `
+                    </div>
+                </div>`;
+            } else if (meta.type === "search") {
+                html += `
+                <div class="interactive-area">
+                    <h3>اكتب داخل الأقواس لتجربة البحث الحي:</h3>
+                    <textarea id="searchArea" placeholder="اكتب مثلا: ﴿الحمد لله﴾ للبحث في القرآن، أو «نية المؤمن» للبحث في الأحاديث..." onkeyup="checkSmartSearch(this.value)"></textarea>
+                    <div id="smartPanel" class="smart-panel-mock">جاري البحث...</div>
+                </div>`;
+            } else if (meta.type === "colors") {
+                html += `
+                <div class="interactive-area">
+                    <h3>اختر لون الورق العام:</h3>
+                    <input type="color" id="colorPicker" value="#FFFDD0" oninput="document.documentElement.style.setProperty('--global-page-bg', this.value); document.getElementById('demoPageColor').style.backgroundColor=this.value;">
+                    <div id="demoPageColor" class="theme-preview-box style-classic" style="margin-top:15px; height:200px;">صفحة تجريبية تتأثر باللون</div>
+                </div>`;
+            } else if (meta.type === "focus") {
+                html += `
+                <div class="interactive-area">
+                    <button onclick="document.getElementById('mockFocusMode').style.display='block'" style="background:#2c3e50; font-size:1.5em; width:100%;">تجربة وضع التركيز 🎯</button>
+                </div>`;
+            } else if (meta.type === "export") {
+                html += `
+                <div class="interactive-area" style="display:flex; gap:15px; flex-wrap:wrap;">
+                    <button style="background:#1976d2;" onclick="alert('في الموقع الأصلي: يقوم المحرك بتجميع كل ما كتبته وتنزيله كملف (اسم_الكتاب.rbook) لفتحه لاحقاً.')">تصدير (rbook) 💾</button>
+                    <button style="background:#00838f;" onclick="alert('في الموقع الأصلي: يحول كتابك إلى صفحة ويب (HTML) مستقلة ومزودة بقارئ تفاعلي وفهرس ديناميكي.')">تصدير تطبيق تفاعلي 📱</button>
+                    <button style="background:#4a3f35;" onclick="alert('في الموقع الأصلي: يقوم بتحويل الصفحات وضبط مقاساتها للطباعة كـ PDF مع الزخارف.')">طباعة PDF ⚡</button>
+                </div>`;
+            } else {
+                html += `
+                <div class="demo-area">
+                    <h3>مثال حي:</h3>
+                    <div class="result-box" id="demo-result-${key}"></div>
+                </div>
+                <div class="interactive-area">
+                    <h3>مساحة التجربة:</h3>
+                    <textarea id="input-${key}">${meta.example}</textarea>
+                    <button onclick="testFeature('${key}')">تطبيق التنسيق 🪄</button>
+                    <div class="result-box" id="result-${key}" style="margin-top: 15px; display:none;"></div>
+                </div>`;
+            }
+            html += `</div>`;
+            container.innerHTML += html;
+        }
+
+        window.onload = function() {
+            for(let key in featuresMeta) {
+                if(featuresMeta[key].group === 1 && !featuresMeta[key].type) {
+                    let res = applyAllStyles(featuresMeta[key].example);
+                    document.getElementById('demo-result-' + key).innerHTML = res;
+                }
+            }
+        };
+
+        function testFeature(key) {
+            let inputVal = document.getElementById('input-' + key).value;
+            let resultBox = document.getElementById('result-' + key);
+            resultBox.innerHTML = applyAllStyles(inputVal);
+            resultBox.style.display = 'block';
+            event.target.style.transform = 'scale(0.95)';
+            setTimeout(() => event.target.style.transform = 'scale(1)', 150);
+        }
+
+        function addMockVault(event) {
+            let key = document.getElementById('vaultKey').value.trim();
+            if(!key) {
+                alert("الرجاء كتابة رمز للملف أولاً (مثلاً: ملفي).");
+                event.target.value = '';
+                return;
+            }
+            let file = event.target.files[0];
+            if (!file) return;
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let type = file.type.split('/')[0];
+                mediaVault[key] = { data: e.target.result, type: type };
+                alert("تم تشفير وحفظ الملف بنجاح! يمكنك الآن كتابة {وسائط: " + key + "} في النص بالأسفل وتجربته.");
+                document.getElementById('vaultKey').value = '';
+                // تحديث حقل النص تلقائياً لتسهيل التجربة
+                document.getElementById('input-mediaVault').value = "{وسائط: " + key + "}";
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        let searchTimer;
+        function checkSmartSearch(val) {
+            let pos = document.getElementById('searchArea').selectionStart;
+            let lastQ = val.lastIndexOf('﴿', pos); let nextQ = val.indexOf('﴾', lastQ);
+            let lastH = val.lastIndexOf('«', pos); let nextH = val.indexOf('»', lastH);
+            let panel = document.getElementById('smartPanel');
+
+            if (lastQ !== -1 && nextQ !== -1 && pos <= nextQ) {
+                let query = val.substring(lastQ + 1, nextQ).trim();
+                if (query.length > 2) {
+                    panel.style.display = 'block';
+                    panel.innerHTML = "<h3 style='color:#6B8E23'>جاري البحث في المصحف عن: " + query + "...</h3>";
+                    clearTimeout(searchTimer);
+                    searchTimer = setTimeout(() => fetchQuranMock(query), 800);
+                }
+            } else if (lastH !== -1 && nextH !== -1 && pos <= nextH) {
+                let query = val.substring(lastH + 1, nextH).trim();
+                if (query.length > 3) {
+                    panel.style.display = 'block';
+                    panel.innerHTML = "<h3 style='color:#b8860b'>جاري التخريج من الدرر السنية عن: " + query + "...</h3>";
+                    clearTimeout(searchTimer);
+                    searchTimer = setTimeout(() => fetchHadithMock(query), 800);
+                }
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        async function fetchQuranMock(query) {
+            let panel = document.getElementById('smartPanel');
+            try {
+                let res = await fetch(`https://api.alquran.cloud/v1/search/${encodeURIComponent(query)}/all/quran-simple-clean`);
+                let data = await res.json();
+                if(data.data.matches && data.data.matches.length > 0) {
+                    let h = `<div style="border-bottom: 2px solid #b8860b; padding-bottom: 5px; margin-bottom: 10px; font-weight:bold;">نتائج القرآن:</div>`;
+                    data.data.matches.slice(0,5).forEach(m => {
+                        h += `<div class="quran-grid"><div>﴿${m.text}﴾</div><div style="color:#6B8E23">[سورة ${m.surah.name}]</div><div>آية: ${m.numberInSurah}</div></div>`;
+                    });
+                    panel.innerHTML = h;
+                } else panel.innerHTML = "لم يتم العثور على آيات.";
+            } catch(e) { panel.innerHTML = "خطأ في الاتصال بالـ API."; }
+        }
+
+        async function fetchHadithMock(query) {
+            let panel = document.getElementById('smartPanel');
+            try {
+                let url = `https://dorar.net/dorara/hadith/search?q=${encodeURIComponent(query)}`;
+                let res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+                let data = await res.json();
+                let doc = new DOMParser().parseFromString(data.contents, 'text/html');
+                let items = doc.querySelectorAll('.hadith-info');
+                if(items.length > 0) {
+                    let h = `<div style="border-bottom: 2px solid #b8860b; padding-bottom: 5px; margin-bottom: 10px; font-weight:bold;">نتائج الحديث:</div>`;
+                    let max = Math.min(items.length, 3);
+                    for(let i=0; i<max; i++) {
+                        let text = items[i].querySelector('.text')?.innerText || '';
+                        let rawi = items[i].querySelector('.info-subtitle:nth-child(1)')?.nextSibling?.textContent || '';
+                        let mohadith = items[i].querySelector('.info-subtitle:nth-child(3)')?.nextSibling?.textContent || '';
+                        let source = items[i].querySelector('.info-subtitle:nth-child(5)')?.nextSibling?.textContent || '';
+                        let hokm = items[i].querySelector('.info-subtitle:nth-child(9)')?.nextSibling?.textContent || '';
+                        h += `<div class="hadith-grid"><div>${text}</div><div style="color:#2c3e50">الراوي: ${rawi.trim()}</div><div style="color:#6B8E23">المحدث: ${mohadith.trim()}</div><div style="color:#d32f2f; font-weight:bold">${hokm.trim()}</div></div>`;
+                    }
+                    panel.innerHTML = h;
+                } else panel.innerHTML = "لم يتم العثور على أحاديث.";
+            } catch(e) { panel.innerHTML = "فشل الاتصال بموسوعة الحديث."; }
+        }
+    </script>
+</body>
+</html>
