@@ -5,7 +5,7 @@ const CACHE_NAME = 'royal-book-v2'; // قمنا بتحديث الإصدار لإ
 // قائمة الملفات الشاملة والضرورية جداً للعمل دون إنترنت
 const urlsToCache = [
   './',                  // تعني الصفحة الرئيسية (index.html)
-  'index.html',
+  'plugins.js',
   'editor.html',
   'login.html',
   'auth.js',
