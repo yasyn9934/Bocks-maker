@@ -1,32 +1,41 @@
-const CACHE_NAME = 'royal-book-v1';
-// قائمة الملفات التي سيتم حفظها للعمل دون إنترنت
+// sw.js
+
+const CACHE_NAME = 'royal-book-v2'; // قمنا بتحديث الإصدار لإجبار المتصفح على التحديث
+
+// قائمة الملفات الشاملة والضرورية جداً للعمل دون إنترنت
 const urlsToCache = [
+  './',                  // تعني الصفحة الرئيسية (index.html)
   'index.html',
   'editor.html',
   'login.html',
   'auth.js',
-  'style.css', // إذا كان لديك ملف CSS خارجي
-  'fonts/Amiri-Regular.ttf',
+  'PDFs/royal-assets.js',  // ملفات المحرك الملكي
+  'PDFs/royal-parser.js',
+  'PDFs/royal-renderer.js',
+  'logo.png',            // الأيقونات ضرورية لتثبيت التطبيق
+  'logo-512.png',
+  'fonts/Amiri-Regular.ttf', // الخطوط ضرورية جداً
+  'fonts/Amiri-Bold.ttf',
+  'fonts/ArefRuqaa-Regular.ttf',
   'fonts/ArefRuqaa-Bold.ttf'
 ];
 
-// مرحلة التثبيت: حفظ الملفات في الذاكرة
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('جاري حفظ ملفات الموقع للعمل دون إنترنت...');
+        // addAll ستحاول جلب كل الملفات، إذا فشل ملف واحد، تفشل العملية كلها
+        // وهذا ما نريده للتأكد من اكتمال النسخة
         return cache.addAll(urlsToCache);
       })
+      .then(() => self.skipWaiting()) // لتفعيل النسخة الجديدة فوراً
   );
 });
 
-// مرحلة الاستجابة: جلب الملف من الكاش إذا لم يتوفر إنترنت
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // إذا وجدنا الملف في الكاش، نعيده، وإذا لم نجده نطلبه من الشبكة
         return response || fetch(event.request);
       })
   );
