@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محرك الكتب الملكي - الإصدار الماسي المعتمد</title>
+    <script src="auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="plugins.js"></script>
+    
+    <script src="PDFs/royal-assets.js"></script>
+    <script src="PDFs/royal-parser.js"></script>
+    <script src="PDFs/royal-renderer.js"></script>
+    
+    <script>
+        let currentSiteFeatures = {};
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof RoyalFeatures !== 'undefined') {
+                for(let f in RoyalFeatures) {
+                    currentSiteFeatures[f] = { css: RoyalFeatures[f].css, execute: RoyalFeatures[f].execute.toString() };
+                }
+                injectDynamicStyles(RoyalFeatures);
+            }
+        });
+
+        function injectDynamicStyles(featuresObj) {
+            let oldStyle = document.getElementById('dynamic-royal-styles');
+            if(oldStyle) oldStyle.remove();
+            let dynamicStyles = document.createElement('style');
+            dynamicStyles.id = 'dynamic-royal-styles';
+            for (let feature in featuresObj) {
+                if (featuresObj[feature].css) dynamicStyles.innerHTML += `/* ${feature} */\n` + featuresObj[feature].css + "\n";
+            }
+            document.head.appendChild(dynamicStyles);
+        }
+    </script>
+
+    <style>
+        @font-face { font-family: 'Amiri'; src: url('fonts/Amiri-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+        @font-face { font-family: 'Amiri'; src: url('fonts/Amiri-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
+        @font-face { font-family: 'Aref Ruqaa'; src: url('fonts/ArefRuqaa-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+        @font-face { font-family: 'Aref Ruqaa'; src: url('fonts/ArefRuqaa-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
+
+        :root { --global-page-bg: #FFFDD0; --global-font-size: 20pt; --royal-gold: #b8860b; --royal-green: #6B8E23; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        @page { size: 250mm 353mm; margin: 0; } 
+
+        body { font-family: 'Amiri', serif; background-color: #f4f6f8; color: #333; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; transition: all 0.3s ease; scroll-behavior: smooth; }
+        .control-panel { width: 100%; max-width: 1150px; background: #ffffff; padding: 30px; border-radius: 16px; box-shadow: 0 12px 35px rgba(0,0,0,0.08); margin-bottom: 40px; display: flex; flex-direction: column; gap: 25px; border: 1px solid #eef0f2; }
+        .stats-bar { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 10px; font-family: 'Amiri'; font-size: 15pt; border: 1px solid #e1e4e8; font-weight: bold; color: #2c3e50; }
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; background: #fafbfc; padding: 25px; border-radius: 12px; border: 1px solid #eef0f2; }
+        .setting-item { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        label { font-family: 'Aref Ruqaa'; color: #4a3f35; font-size: 14pt; font-weight: bold; }
+        input, select, textarea { width: 100%; height: 48px; padding: 10px 15px; font-family: 'Amiri', serif; font-size: 14pt; border: 1px solid #dcdde1; border-radius: 8px; outline: none; transition: all 0.2s; background: #fff; }
+        input:focus, select:focus, textarea:focus { border-color: var(--royal-gold); box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1); }
+        input[type="color"] { padding: 2px 5px; cursor: pointer; }
+        .file-upload-wrapper { display: flex; gap: 8px; height: 48px; }
+        .file-upload-wrapper input[type="text"] { flex: 1; height: 100%; }
+        .file-upload-wrapper button { height: 100%; padding: 0 20px; background: var(--royal-gold); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 16pt; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .file-upload-wrapper button:hover { background: #9a7008; }
+
+        .vault-box { background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #eef0f2; margin-top: 10px; }
+        .vault-list { max-height: 150px; overflow-y: auto; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px; }
+        .vault-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #fff; border: 1px solid #eee; border-radius: 6px; margin-bottom: 5px; font-family: 'Amiri'; }
+        .media-btn { background: #b8860b; color: #fff; border: none; padding: 5px 15px; border-radius: 20px; font-family: 'Amiri'; cursor: pointer; font-size: 14pt; margin: 5px 0; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .media-btn:hover { background: #9a7008; transform: translateY(-1px); }
+
+        textarea#mainText { height: 400px; padding: 20px; line-height: 1.8; white-space: pre-wrap; resize: vertical; }
+        
+        .btn-row { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+        .btn { background-color: var(--royal-green); color: white; border: none; padding: 12px 25px; font-size: 14pt; font-family: 'Aref Ruqaa'; border-radius: 8px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); min-width: 140px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+        .btn-focus { background-color: #2c3e50; } .btn-export { background-color: #1976d2; } .btn-import { background-color: #ef6c00; } .btn-clear { background-color: #d32f2f; } .btn-bg { background-color: #8e44ad; } .btn-interactive { background-color: #00838f; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(5px); }
+        .modal-content { background: #fff; padding: 40px; border-radius: 20px; text-align: center; max-width: 550px; border-top: 8px solid #b8860b; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 90%; }
+        .modal-title { font-family: 'Aref Ruqaa'; color: #4a3f35; font-size: 24pt; margin-bottom: 15px; }
+        .modal-desc { font-family: 'Amiri'; font-size: 16pt; color: #666; margin-bottom: 25px; line-height: 1.6; }
+        .modal-buttons { display: flex; flex-direction: column; gap: 15px; }
+        .btn-modal { padding: 15px; font-size: 16pt; border-radius: 10px; font-family: 'Amiri'; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; }
+        .btn-modal:hover { transform: translateY(-2px); }
+        .btn-original { background: #b8860b; color: white; } .btn-current { background: #6B8E23; color: white; } .btn-cancel { background: #d32f2f; color: white; margin-top: 10px; }
+
+        .bg-list { max-height: 250px; overflow-y: auto; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .bg-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #f8f9fa; border: 1px solid #e1e4e8; border-radius: 8px; font-family: 'Amiri'; font-weight: bold; }
+        .bg-item img { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; }
+
+        body.focus-mode { background-color: #fcfcfc; padding: 0; }
+        body.focus-mode .control-panel { max-width: 100%; box-shadow: none; margin: 0; border-radius: 0; padding: 15px 50px; background: transparent; border: none; }
+        body.focus-mode .settings-grid, body.focus-mode .vault-box, body.focus-mode #book-container, body.focus-mode .stats-bar { display: none; }
+        body.focus-mode textarea#mainText { height: 85vh; font-size: 22pt; border: none; background: #fcfcfc; box-shadow: none; }
+
+        #smart-panel { position: fixed; bottom: 0; left: 0; right: 0; max-height: 40vh; overflow-y: auto; background: #fdfdfd; border-top: 4px solid #b8860b; box-shadow: 0 -10px 25px rgba(0,0,0,0.15); z-index: 2000; padding: 20px 30px; display: none; font-family: 'Amiri', serif; }
+        .panel-header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-bottom: 15px; }
+        .panel-title { font-family: 'Aref Ruqaa'; color: #6B8E23; font-size: 20pt; margin: 0; }
+        .close-btn { background: #d32f2f; color: white; border: none; padding: 5px 15px; font-size: 14pt; cursor: pointer; border-radius: 5px; }
+        .result-item { border-bottom: 1px solid #eee; padding: 12px 0; cursor: pointer; transition: background 0.3s; }
+        .result-item:hover { background: #f0f4f8; border-right: 4px solid #b8860b; padding-right: 10px; }
+        
+        .quran-grid { display: grid; grid-template-columns: 3fr 1fr 1fr; gap: 15px; align-items: center; }
+        .hadith-grid { display: grid; grid-template-columns: 3fr 1.5fr 1.5fr 1fr; gap: 15px; align-items: center; }
+        .grid-header { font-family: 'Aref Ruqaa'; font-size: 16pt; color: #4a3f35; font-weight: bold; border-bottom: 2px solid #b8860b; padding-bottom: 5px; margin-bottom: 10px; }
+
+        #book-container { display: flex; flex-direction: column; gap: 30px; width: 250mm; }
+        
+        .page-wrapper { width: 250mm; height: 353mm; position: relative; overflow: hidden; background-color: var(--global-page-bg) !important; page-break-after: always; box-shadow: 0 0 20px rgba(0,0,0,0.08); box-sizing: border-box; }
+        .page-header { position: absolute; width: 100%; display: flex; justify-content: space-between; padding: 0 35mm; font-size: 14pt; color: #4a3f35; font-family: 'Amiri'; font-weight: bold; z-index: 10; }
+        .style-islamic .page-header { top: 6mm; } .style-classic .page-header { top: 5mm; } .style-floral .page-header { top: 7mm; } .style-royal .page-header { top: 8mm; } .style-minimal .page-header { top: 5mm; } .style-clean .page-header { top: 10mm; }
+        .content-body { position: absolute; top: 42mm; bottom: 25mm; left: 35mm; right: 35mm; font-size: var(--global-font-size); line-height: 2.2; z-index: 2; overflow: hidden; }
+        .cover-page { background-size: cover; background-position: center; }
+        .cover-page .content-body { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .toc-link { text-decoration: none; color: inherit; display: flex; justify-content: space-between; width: 100%; transition: color 0.2s; cursor: pointer; }
+        .toc-link:hover { color: #b8860b; background-color: rgba(184, 134, 11, 0.05); }
+
+        @media print { 
+            body > *:not(#book-container) { display: none !important; } 
+            body { background: white; padding: 0; } 
+            #book-container { display: flex !important; gap: 0 !important; width: 100%; margin: 0; padding: 0; } 
+            .page-wrapper { margin: 0 !important; box-shadow: none !important; border: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="control-panel">
+        <div class="stats-bar">
+            <div>الكلمات: <span id="stat-words">0</span></div>
+            <div>الحروف: <span id="stat-chars">0</span></div>
+            <div>العناوين: <span id="stat-headers">0</span></div>
+        </div>
+
+        <div class="settings-grid">
+            <div class="setting-item"><label>عنوان الكتاب</label><input type="text" id="cTitle" oninput="autoSaveAndBuild()" placeholder="﴿عنوان الكتاب﴾"></div>
+            <div class="setting-item"><label>اسم المؤلف</label><input type="text" id="cAuthor" oninput="autoSaveAndBuild()" placeholder="المؤلف"></div>
+            <div class="setting-item"><label>تاريخ التأليف</label><input type="text" id="cDate" oninput="autoSaveAndBuild()" placeholder="1447هـ"></div>
+            
+            <div class="setting-item">
+                <label>صورة الغلاف</label>
+                <div class="file-upload-wrapper">
+                    <input type="text" id="cCoverImg" oninput="autoSaveAndBuild()" placeholder="رابط خارجي...">
+                    <button onclick="document.getElementById('coverFileInput').click()" title="اختر صورة من الجهاز">📁</button>
+                    <input type="file" id="coverFileInput" accept="image/*" style="display:none" onchange="handleCoverUpload(event)">
+                </div>
+            </div>
+
+            <div class="setting-item"><label>كود اللون</label><input type="text" id="colorCodeInput" oninput="syncPickerFromCode(this.value)" placeholder="FFFDD0"></div>
+            <div class="setting-item"><label>لون الورق</label><input type="color" id="globalBgPicker" oninput="syncCodeFromPicker(this.value)"></div>
+            <div class="setting-item">
+                <label>نمط الزخرفة</label>
+                <select id="pageStyle" onchange="autoSaveAndBuild()">
+                    <option value="style-islamic">زخرفة إسلامية</option>
+                    <option value="style-classic">إطار كلاسيكي</option>
+                    <option value="style-floral">زخرفة نباتية</option>
+                    <option value="style-royal">إطار ملكي</option>
+                    <option value="style-minimal">زخرفة هادئة</option>
+                    <option value="style-clean">بدون زخرفة</option>
+                </select>
+            </div>
+            <div class="setting-item"><label>حجم الخط</label><input type="number" id="cFontSize" value="20" oninput="autoSaveAndBuild()"></div>
+        </div>
+
+        <div class="vault-box">
+            <label>🔐 خزنة الوسائط (صور، فيديو، صوت) - <span style="color:#6B8E23; font-size:11pt;">مدمجة بقاعدة بيانات IndexedDB المتطورة</span></label>
+            <p style="font-family:'Amiri'; color:#666; font-size:12pt; margin-bottom:10px;">أدخل رمزاً مخصصاً، ثم ارفع الملف المُراد تشفيره. استخدم الصيغة <b>{وسائط: الرمز}</b> داخل المحرر لاستدعائه.</p>
+            <div class="file-upload-wrapper" style="max-width: 600px;">
+                <input type="text" id="mediaKeyInput" placeholder="اكتب رمزاً هنا (مثال: مقطع1)...">
+                <input type="file" id="mediaFileInput" style="display:none" onchange="addToMediaVault(event)">
+                <button onclick="document.getElementById('mediaFileInput').click()" style="background:#2c3e50; font-family:'Aref Ruqaa';">تشفير وحفظ 📥</button>
+            </div>
+            <div class="vault-list" id="vaultList"></div>
+        </div>
+        
+        <textarea id="mainText" placeholder="اكتب محتوى كتابك هنا..." oninput="autoSaveAndBuild()" onkeyup="checkSmartBrackets(event)"></textarea>
+        
+        <div class="btn-row">
+            <button class="btn" style="background:#2c3e50" onclick="handleBackAction()">الرئيسية 🏠</button>
+            <button id="saveCloudBtn" class="btn" style="background:#27ae60" onclick="saveToDrive()">حفظ في درايف ☁️</button>
+            <button class="btn btn-focus" id="btnFocus" onclick="toggleFocusMode()">وضع التركيز 🎯</button>
+            <button class="btn btn-bg" onclick="openBgModal()">خلفيات الصفحات 🖼️</button>
+            <button class="btn" onclick="buildBook()">تحديث المعاينة 🔄</button>
+            <button class="btn btn-export" onclick="exportBook()">تصدير كملف (rbook) 💾</button>
+            <button class="btn btn-interactive" onclick="exportInteractiveBook()">تصدير تطبيق قراءة تفاعلي 📱</button>
+            <input type="file" id="importFile" accept=".rbook" style="display:none" onchange="handleFileSelect(event)">
+            <button class="btn btn-import" onclick="document.getElementById('importFile').click()">استيراد ملف 📂</button>
+            <button class="btn btn-clear" onclick="startNewBook()">عمل جديد 🗑️</button>
+            <button class="btn" style="background:#4a3f35" onclick="downloadPDF()">طباعة PDF ⚡</button>
+        </div>
+        
+    </div>
+
+    <div id="bgModal" class="modal-overlay">
+        <div class="modal-content" style="border-top-color:#8e44ad;">
+            <h2 class="modal-title" style="color:#8e44ad;">إدارة خلفيات الصفحات المخصصة</h2>
+            <div class="setting-item" style="margin-bottom: 15px;">
+                <label>رقم الصفحة المستهدفة</label>
+                <input type="number" id="bgPageNum" placeholder="مثال: 2" min="1">
+            </div>
+            <div class="setting-item" style="margin-bottom: 15px;">
+                <label>صورة الخلفية</label>
+                <div class="file-upload-wrapper">
+                    <input type="text" id="bgLinkInput" placeholder="رابط صورة خارجية...">
+                    <button onclick="document.getElementById('bgFileInput').click()" title="رفع من الجهاز">📁</button>
+                    <input type="file" id="bgFileInput" accept="image/*" style="display:none" onchange="handleBgUpload(event)">
+                </div>
+            </div>
+            <button class="btn" style="width:100%; background:#8e44ad;" onclick="addBgFromLink()">إضافة الخلفية ✔</button>
+            <div class="bg-list" id="bgList"></div>
+            <button class="btn btn-clear" style="width:100%; margin-top:15px;" onclick="closeBgModal()">إغلاق وتطبيق ✖</button>
+        </div>
+    </div>
+
+    <div id="importModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="modal-title">كيف تود استيراد الكتاب؟</h2>
+            <p class="modal-desc">لقد وجدنا أكواد تنسيق مدمجة داخل هذا الملف، هل تريد تطبيقها أم تفضل استخدام أحدث أكواد الموقع الحالية؟</p>
+            <div class="modal-buttons">
+                <button class="btn-modal btn-original" onclick="applyImport(true)">استيراد بالأكواد الأصلية للملف 📦</button>
+                <button class="btn-modal btn-current" onclick="applyImport(false)">استيراد بأكواد الموقع الحالية 🌐</button>
+                <button class="btn-modal btn-cancel" onclick="closeImportModal()">إلغاء الأمر ✖</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:white; padding:25px; border-radius:10px; width:90%; max-width:400px; text-align:center; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            <h3 style="color:#2c3e50; margin-bottom:15px;">تنبيه: توجد تغييرات غير محفوظة</h3>
+            <p style="color:#7f8c8d; margin-bottom:20px;">هل تريد حفظ التغييرات في درايف قبل المغادرة؟</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button class="btn" style="background:#27ae60; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;" onclick="saveAndExit()">حفظ ورجوع</button>
+                <button class="btn" style="background:#e74c3c; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;" onclick="exitWithoutSaving()">رجوع دون حفظ</button>
+                <button class="btn" style="background:#95a5a6; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;" onclick="closeConfirmModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="smart-panel"></div>
+    <div id="book-container"></div>
+
+<script>
+    // المتغيرات العامة
+    let lastSavedData = ""; 
+    let mediaVault = {};
+    let customPageBackgrounds = {};
+    let currentBookId = null; 
+    let uploadedBookData = null;
+    let searchTimer; 
+    let searchResultsList = [];
+    const DB_NAME = 'RoyalBookDB';
+    const VAULT_STORE = 'mediaVaultStore';
+
+    // --- 1. المزامنة والتحقق من التغييرات ---
+    function getCurrentBookObject() {
+        return {
+            id: currentBookId || 'book_' + Date.now(),
+            title: document.getElementById('cTitle').value,
+            author: document.getElementById('cAuthor').value,
+            date: document.getElementById('cDate').value,
+            text: document.getElementById('mainText').value,
+            color: document.getElementById('globalBgPicker').value,
+            style: document.getElementById('pageStyle').value,
+            size: document.getElementById('cFontSize').value,
+            cover: document.getElementById('cCoverImg').value,
+            customBgs: customPageBackgrounds,
+            updatedAt: Date.now()
+        };
+    }
+
+    function isDataChanged() {
+        return JSON.stringify(getCurrentBookObject()) !== lastSavedData;
+    }
+
+    function handleBackAction() {
+        if (isDataChanged()) document.getElementById('confirmModal').style.display = 'flex';
+        else window.location.href = 'index.html';
+    }
+
+    function closeConfirmModal() { document.getElementById('confirmModal').style.display = 'none'; }
+    function exitWithoutSaving() { window.location.href = 'index.html'; }
+
+    async function saveAndExit() {
+        await saveToDrive(); 
+        window.location.href = 'index.html';
+    }
+
+    async function saveToDrive() {
+        const bookData = getCurrentBookObject();
+        currentBookId = bookData.id; 
+        const btn = document.getElementById('saveCloudBtn');
+        if(btn) { btn.innerText = "جاري الحفظ...⏳"; btn.disabled = true; }
+
+        localStorage.setItem('bookData', JSON.stringify(bookData));
+        updateGlobalBooksList(bookData);
+        localStorage.setItem('pending_sync_book', JSON.stringify(bookData)); 
+        
+        try {
+            if (!navigator.onLine) throw new Error("Offline");
+
+            const response = await fetch(AUTH_CONFIG.SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "save_book",
+                    userId: currentUser.id,
+                    userName: currentUser.username,
+                    bookId: bookData.id,
+                    bookData: bookData,
+                    categoryName: "عام"
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                lastSavedData = JSON.stringify(bookData);
+                localStorage.removeItem('pending_sync_book'); 
+                alert("تم الحفظ في درايف بنجاح ✅");
+                if(btn) { btn.innerText = "حفظ في درايف ☁️"; btn.disabled = false; }
+                return true;
+            }
+        } catch (error) {
+            alert("تم الحفظ محلياً. سيتم الرفع عند توفر الإنترنت.");
+            if(btn) { btn.innerText = "حفظ محلي 💾"; btn.disabled = false; }
+            return false;
+        }
+    }
+
+    function autoSaveAndBuild() {
+        const bookData = getCurrentBookObject();
+        currentBookId = bookData.id; 
+        
+        document.getElementById('stat-words').innerText = bookData.text.trim() ? bookData.text.trim().split(/\s+/).length : 0;
+        document.getElementById('stat-chars').innerText = bookData.text.length;
+        document.getElementById('stat-headers').innerText = (bookData.text.match(/^# /gm) || []).length;
+        
+        localStorage.setItem('bookData', JSON.stringify(bookData));
+        updateGlobalBooksList(bookData); 
+        buildBook();
+    }
+
+    function updateGlobalBooksList(book) {
+        let allBooks = JSON.parse(localStorage.getItem('royal_books_list') || '[]');
+        let index = allBooks.findIndex(b => b.id === book.id);
+        if (index !== -1) allBooks[index] = { ...allBooks[index], ...book };
+        else allBooks.push(book);
+        localStorage.setItem('royal_books_list', JSON.stringify(allBooks));
+    }
+
+    // --- 2. إدارة قاعدة البيانات والخزنة ---
+    function initDB(callback) {
+        let req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+            let db = e.target.result;
+            if (!db.objectStoreNames.contains(VAULT_STORE)) db.createObjectStore(VAULT_STORE);
+        };
+        req.onsuccess = (e) => callback(e.target.result);
+    }
+
+    function saveVaultToDB() {
+        initDB(db => {
+            let tx = db.transaction(VAULT_STORE, 'readwrite');
+            tx.objectStore(VAULT_STORE).put(mediaVault, 'currentVault');
+        });
+    }
+
+    function loadVaultFromDB(callback) {
+        initDB(db => {
+            let tx = db.transaction(VAULT_STORE, 'readonly');
+            let req = tx.objectStore(VAULT_STORE).get('currentVault');
+            req.onsuccess = () => callback(req.result || {});
+        });
+    }
+
+    function addToMediaVault(event) {
+        let key = document.getElementById('mediaKeyInput').value.trim();
+        if(!key) return alert("الرجاء كتابة رمز للملف أولاً.");
+        let file = event.target.files[0]; if (!file) return;
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            let type = file.type.split('/')[0];
+            mediaVault[key] = { data: e.target.result, type: type };
+            document.getElementById('mediaKeyInput').value = '';
+            saveVaultToDB(); renderVaultList(); autoSaveAndBuild();
+        };
+        reader.readAsDataURL(file); event.target.value = '';
+    }
+
+    function removeMedia(key) { delete mediaVault[key]; saveVaultToDB(); renderVaultList(); autoSaveAndBuild(); }
+
+    function renderVaultList() {
+        let html = '';
+        for(let key in mediaVault) {
+            let icon = mediaVault[key].type === 'image' ? '🖼️' : mediaVault[key].type === 'video' ? '🎥' : '🎵';
+            html += `<div class="vault-item"><span>${icon} الرمز: <b>${key}</b></span> <button onclick="removeMedia('${key}')" style="color:red; border:none; background:none; cursor:pointer;">حذف ✖</button></div>`;
+        }
+        document.getElementById('vaultList').innerHTML = html || "<div style='color:#888; text-align:center;'>الخزنة فارغة</div>";
+    }
+
+    // --- 3. استيراد وتصدير وإنشاء ---
+    function startNewBook() {
+        if (confirm("تنبيه: سيتم مسح العمل الحالي بالكامل. تأكد من الحفظ.")) {
+            localStorage.removeItem('bookData');
+            mediaVault = {}; saveVaultToDB(); currentBookId = null;
+            document.getElementById('mainText').value = ""; document.getElementById('cTitle').value = ""; document.getElementById('cAuthor').value = ""; document.getElementById('cDate').value = ""; document.getElementById('cCoverImg').value = "";
+            document.getElementById('cFontSize').value = 20; document.getElementById('globalBgPicker').value = "#FFFDD0"; document.getElementById('colorCodeInput').value = "FFFDD0"; document.getElementById('pageStyle').value = "style-islamic";
+            customPageBackgrounds = {}; updateGlobalColor("#FFFDD0"); renderVaultList(); autoSaveAndBuild(); hidePanel(); document.getElementById('mainText').focus();
+        }
+    }
+
+    function exportBook() {
+        autoSaveAndBuild();
+        let engineState = {};
+        for (let f in RoyalFeatures) { engineState[f] = { css: RoyalFeatures[f].css, execute: RoyalFeatures[f].execute.toString() }; }
+        let exportPayload = { metadata: getCurrentBookObject(), engineVersion: engineState, vault: mediaVault };
+        let blob = new Blob([JSON.stringify(exportPayload, null, 2)], {type: "application/json"});
+        let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url;
+        a.download = (document.getElementById('cTitle').value || 'كتاب_ملكي') + '.rbook';
+        a.click(); URL.revokeObjectURL(url);
+    }
+
+    function handleFileSelect(e) {
+        let file = e.target.files[0]; if(!file) return;
+        let reader = new FileReader();
+        reader.onload = function(evt) {
+            try {
+                uploadedBookData = JSON.parse(evt.target.result);
+                if(uploadedBookData.engineVersion) { document.getElementById('importModal').style.display = 'flex'; } 
+                else { applyImport(false); }
+            } catch(err) { alert("ملف غير مدعوم أو تالف."); }
+        };
+        reader.readAsText(file); document.getElementById('importFile').value = ''; 
+    }
+
+    function closeImportModal() { document.getElementById('importModal').style.display = 'none'; uploadedBookData = null; }
+
+    function applyImport(useOriginalEngine) {
+        document.getElementById('importModal').style.display = 'none';
+        if(!uploadedBookData || !uploadedBookData.metadata) return;
+
+        let s = uploadedBookData.metadata;
+        currentBookId = s.id || 'book_' + Date.now();
+        document.getElementById('mainText').value = s.t || s.text || ""; document.getElementById('cTitle').value = s.title || ""; document.getElementById('cAuthor').value = s.author || ""; document.getElementById('cDate').value = s.date || ""; document.getElementById('cCoverImg').value = s.cover || "";
+        document.getElementById('cFontSize').value = s.size || 20; document.getElementById('globalBgPicker').value = s.color || s.bgColor || "#FFFDD0"; document.getElementById('pageStyle').value = s.style || "style-islamic";
+        
+        customPageBackgrounds = s.customBgs || {}; 
+        mediaVault = uploadedBookData.vault || s.vault || {}; 
+        saveVaultToDB(); updateGlobalColor(document.getElementById('globalBgPicker').value);
+
+        if(useOriginalEngine && uploadedBookData.engineVersion) {
+            for(let f in uploadedBookData.engineVersion) { RoyalFeatures[f] = { css: uploadedBookData.engineVersion[f].css, execute: new Function('return ' + uploadedBookData.engineVersion[f].execute)() }; }
+            injectDynamicStyles(RoyalFeatures);
+        } else {
+            for(let f in currentSiteFeatures) { RoyalFeatures[f] = { css: currentSiteFeatures[f].css, execute: new Function('return ' + currentSiteFeatures[f].execute)() }; }
+            injectDynamicStyles(RoyalFeatures);
+        }
+        renderVaultList(); autoSaveAndBuild();
+    }
+
+    // --- 4. معالجة النصوص والأقواس الذكية ---
+    function checkSmartBrackets(e) {
+        const val = e.target.value; const pos = e.target.selectionStart;
+        let lastQ = val.lastIndexOf('﴿', pos - 1); let nextQ = val.indexOf('﴾', pos);
+        let lastH = val.lastIndexOf('«', pos - 1); let nextH = val.indexOf('»', pos);
+        clearTimeout(searchTimer);
+        if (lastQ !== -1 && nextQ !== -1 && pos <= nextQ) {
+            let query = val.substring(lastQ + 1, nextQ).trim();
+            if (query.length > 2) { showPanelMessage("جاري البحث في المصحف..."); searchTimer = setTimeout(() => fetchQuran(query), 800); }
+        } else if (lastH !== -1 && nextH !== -1 && pos <= nextH) {
+            let query = val.substring(lastH + 1, nextH).trim();
+            if (query.length > 3) { showPanelMessage("جاري التخريج من الدرر السنية..."); searchTimer = setTimeout(() => fetchHadith(query), 800); }
+        } else { hidePanel(); }
+    }
+
+    async function fetchQuran(query) {
+        try { let res = await fetch(`https://api.alquran.cloud/v1/search/${encodeURIComponent(query)}/all/quran-simple-clean`); let data = await res.json(); if(data.data.matches) renderQuran(data.data.matches); } catch(e) { showPanelMessage("خطأ في الاتصال بمحرك البحث."); }
+    }
+
+    async function fetchHadith(query) {
+        try { let url = `https://dorar.net/dorara/hadith/search?q=${encodeURIComponent(query)}`; let res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`); let data = await res.json(); let doc = new DOMParser().parseFromString(data.contents, 'text/html'); let items = doc.querySelectorAll('.hadith-info'); if(items.length > 0) renderHadith(items); else showPanelMessage("لم يتم العثور على أحاديث."); } catch(e) { showPanelMessage("فشل الاتصال بموسوعة الحديث."); }
+    }
+
+    function renderQuran(matches) {
+        searchResultsList = []; let h = `<div class="panel-header-bar"><h3 class="panel-title">نتائج القرآن الكريم</h3><button class="close-btn" onclick="hidePanel()">إغلاق ✖</button></div><div class="quran-grid grid-header"><div>الآية</div><div>السورة</div><div>رقم الآية</div></div>`;
+        matches.forEach((m, i) => { let meta = `[${m.surah.name}: ${toArabicNum(m.numberInSurah)}]`; searchResultsList.push(`﴿${m.text}﴾${meta}`); h += `<div class="result-item quran-grid" onclick="insertRes(${i}, 'q')"><div>${m.text}</div><div style="color:#6B8E23">${m.surah.name}</div><div>${toArabicNum(m.numberInSurah)}</div></div>`; });
+        document.getElementById('smart-panel').innerHTML = h; document.getElementById('smart-panel').style.display = 'block';
+    }
+
+    function renderHadith(items) {
+        searchResultsList = []; let h = `<div class="panel-header-bar"><h3 class="panel-title">نتائج السنة النبوية</h3><button class="close-btn" onclick="hidePanel()">إغلاق ✖</button></div><div class="hadith-grid grid-header"><div>المتن</div><div>المصدر</div><div>الحكم</div><div>النوع</div></div>`;
+        items.forEach((item, i) => {
+            if(i < 8) { let text = item.querySelector('.hadith')?.textContent.trim(); let info = item.querySelector('.info')?.textContent.replace(/\s+/g, ' ').trim(); let src = info.match(/المصدر:\s*(.*?)\s*(?=الصفحة|$)/)?.[1] || "الدرر"; let rul = info.match(/خلاصة حكم المحدث:\s*(.*?)\s*(?=التخريج|$)/)?.[1] || "متوفر"; let meta = src.includes("البخاري") || src.includes("مسلم") ? `[${src}]` : `[${src}: ${rul}]`; searchResultsList.push(`«${text}»${meta}`); h += `<div class="result-item hadith-grid" onclick="insertRes(${i}, 'h')"><div>${text.substring(0,100)}...</div><div style="color:#0077be">${src}</div><div style="color:#d32f2f">${rul}</div><div>مرفوع</div></div>`; }
+        });
+        document.getElementById('smart-panel').innerHTML = h; document.getElementById('smart-panel').style.display = 'block';
+    }
+
+    function insertRes(index, type) { const el = document.getElementById('mainText'); const val = el.value; let start = val.lastIndexOf(type === 'q' ? '﴿' : '«'); let end = val.indexOf(type === 'q' ? '﴾' : '»', start); if(start !== -1) { el.value = val.substring(0, start) + searchResultsList[index] + val.substring(end + 1); hidePanel(); autoSaveAndBuild(); el.focus(); } }
+    function hidePanel() { document.getElementById('smart-panel').style.display = 'none'; }
+    function showPanelMessage(m) { document.getElementById('smart-panel').innerHTML = `<div class="panel-header-bar"><h3 class="panel-title" style="color:#888">${m}</h3><button class="close-btn" onclick="hidePanel()">إغلاق</button></div>`; document.getElementById('smart-panel').style.display = 'block'; }
+    function toArabicNum(n) { return String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]); }
+    function goToChapter(e, chapterId) { e.preventDefault(); const el = document.getElementById(chapterId); if (el) { const wrapper = el.closest('.page-wrapper'); if(wrapper) wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }
+
+    function processMediaKeys(text) {
+        return text.replace(/\{وسائط:\s*(.*?)\}/g, (match, key) => {
+            let media = mediaVault[key.trim()];
+            if(!media) return `<span style="color:red">[وسائط مفقودة: ${key}]</span>`;
+            if(media.type === 'image') return `<img src="${media.data}" style="max-width:100%; border-radius:8px; display:block; margin:10px auto;">`;
+            let icon = media.type === 'video' ? '🎥' : '🎵';
+            return `<div style="text-align:center; padding:10px; border:1px dashed #ccc; border-radius:8px; margin:10px 0;"><button class="media-btn">${icon} تشغيل الوسائط: ${key} (متاحة في التطبيق التفاعلي)</button></div>`;
+        });
+    }
+
+    function applyStyles(text, footnoteList) {
+        if (!text) return ""; let res = text;
+        if(typeof RoyalFeatures !== 'undefined') { for (let feature in RoyalFeatures) { res = RoyalFeatures[feature].execute(res, footnoteList); } }
+        return processMediaKeys(res); 
+    }
+
+    // --- 5. بناء صفحات الكتاب للطباعة والعرض ---
+    function buildBook() {
+        updateFontSize(document.getElementById('cFontSize').value);
+        const container = document.getElementById('book-container'); container.innerHTML = '';
+        
+        const coverPageBody = createPage(container, false); 
+        coverPageBody.parentElement.classList.add('cover-page');
+        const img = document.getElementById('cCoverImg').value; 
+        if(img) coverPageBody.parentElement.style.backgroundImage = `url('${img}')`;
+        
+        coverPageBody.innerHTML = `<div style="width:100%; margin-top: -40mm;">
+            <div style="font-size:55pt; font-family:'Aref Ruqaa'; margin-bottom: 25mm; line-height:1.1;">${applyStyles(document.getElementById('cTitle').value, [])}</div>
+            <div style="font-size:30pt; margin-bottom: 15px; color: #4a3f35;">${applyStyles(document.getElementById('cAuthor').value, [])}</div>
+            <div style="font-size:20pt; color: #777;">${document.getElementById('cDate').value}</div>
+        </div>`;
+
+        let rawText = document.getElementById('mainText').value;
+        rawText = rawText.replace(/\[«([\s\S]+?)»\]\{([\s\S]*?)\}\[اقتباس:\s*([\s\S]*?)\]/g, m => m.replace(/\n/g, '<br>'));
+
+        const lines = rawText.split('\n');
+        let currentBody = null; let currentFns = []; let tocItems = []; let chapterCounter = 0;
+
+        lines.forEach(line => {
+            if (!line.trim() && !currentBody) return; 
+            if(line.startsWith('# ')) {
+                if(currentBody && currentFns.length > 0) printFns(currentBody, currentFns);
+                currentFns = []; currentBody = createPage(container, true); chapterCounter++;
+                let hText = line.replace('# ', ''); tocItems.push({title: hText, ch: chapterCounter});
+                let h = document.createElement('h1'); h.id = 'chapter-' + chapterCounter; h.style.textAlign='center'; h.style.fontFamily="'Aref Ruqaa'"; h.style.marginBottom="10mm"; h.innerHTML = applyStyles(hText, []); currentBody.appendChild(h);
+            } else {
+                if (!currentBody) currentBody = createPage(container, true);
+                let d = document.createElement('div'); d.style.whiteSpace = 'pre-wrap'; d.style.marginBottom = "5px"; 
+                d.innerHTML = line.trim() === "" ? '&nbsp;' : applyStyles(line, currentFns);
+                currentBody.appendChild(d);
+                if(currentBody.scrollHeight > currentBody.clientHeight + 5) {
+                    if (currentBody.childNodes.length > 1) { currentBody.removeChild(d); currentBody = createPage(container, true); currentBody.appendChild(d); } else { currentBody.style.overflow = "visible"; }
+                }
+            }
+        });
+
+        if(currentBody && currentFns.length > 0) printFns(currentBody, currentFns);
+
+        if(tocItems.length > 0) {
+            let p = createPage(container, true); let html = `<div class="toc-title">فهرس المحتويات</div>`;
+            tocItems.forEach(item => { html += `<div class="toc-item"><a href="#chapter-${item.ch}" onclick="goToChapter(event, 'chapter-${item.ch}')" class="toc-link"><span class="toc-text">${applyStyles(item.title, [])}</span><span class="toc-page">الفصل ${item.ch}</span></a></div>`; });
+            p.innerHTML = html;
+        }
+
+        let allPages = document.querySelectorAll('.page-wrapper');
+        for (let pNum in customPageBackgrounds) {
+            let index = parseInt(pNum) - 1; 
+            if (allPages[index]) {
+                allPages[index].classList.remove('style-islamic', 'style-classic', 'style-floral', 'style-royal', 'style-minimal');
+                allPages[index].classList.add('style-clean');
+                allPages[index].style.setProperty('background-image', `url('${customPageBackgrounds[pNum]}')`, 'important');
+                allPages[index].style.setProperty('background-size', 'cover', 'important');
+                allPages[index].style.setProperty('background-position', 'center', 'important');
+                allPages[index].style.setProperty('background-repeat', 'no-repeat', 'important');
+            }
+        }
+    }
+
+    function createPage(c, hasHeader) {
+        const w = document.createElement('div'); w.className = 'page-wrapper ' + document.getElementById('pageStyle').value;
+        if(hasHeader) w.innerHTML = `<div class="page-header"><span>${applyStyles(document.getElementById('cTitle').value, [])}</span><span>${document.getElementById('cDate').value}</span></div>`;
+        const b = document.createElement('div'); b.className = 'content-body'; w.appendChild(b); c.appendChild(w); return b;
+    }
+
+    function printFns(body, fns) { let h = '<div class="footnotes-section">'; fns.forEach((f, i) => h += `<div>[${i+1}] ${applyStyles(f, [])}</div>`); body.innerHTML += h + '</div>'; }
+
+    // --- 6. التصدير التفاعلي (HTML) والـ PDF وإدارة الواجهة ---
+    function exportInteractiveBook() {
+        autoSaveAndBuild();
+        let bookData = getCurrentBookObject();
+        let content = bookData.text;
+        if(!content.trim()) return alert("لا يوجد محتوى لتصديره!");
+
+        let featuresStr = "const RoyalFeatures = {";
+        if(typeof RoyalFeatures !== 'undefined') { for(let f in RoyalFeatures) { featuresStr += `"${f}": { css: \`${RoyalFeatures[f].css}\`, execute: ${RoyalFeatures[f].execute.toString()} },`; } }
+        featuresStr += "};";
+        let vaultDataStr = JSON.stringify(mediaVault); 
+
+        let interactiveHTML = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${bookData.title || 'تطبيق القراءة'}</title>
+    <style>
+        @font-face { font-family: 'Amiri'; src: url('fonts/Amiri-Regular.ttf') format('truetype'); }
+        @font-face { font-family: 'Aref Ruqaa'; src: url('fonts/ArefRuqaa-Regular.ttf') format('truetype'); }
+        :root { --bg: ${bookData.color || '#FFFDD0'}; --text: #333; --accent: #b8860b; --nav-bg: #f8f9fa; --border: #e1e4e8; --btn-bg: #fff; }
+        body.dark-mode { --bg: #121212; --text: #e0e0e0; --accent: #d4af37; --nav-bg: #1e1e1e; --border: #333; --btn-bg: #2c2c2c; }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); font-family: 'Amiri', serif; transition: background-color 0.3s, color 0.3s; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: var(--nav-bg); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .header-title { font-family: 'Aref Ruqaa'; font-size: 18pt; color: var(--accent); font-weight: bold; margin: 0 15px; text-align: center; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nav-btn { background: var(--btn-bg); border: 1px solid var(--border); color: var(--text); font-family: 'Amiri'; font-size: 14pt; padding: 8px 15px; border-radius: 8px; cursor: pointer; transition: 0.2s; margin: 0 5px; }
+        .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .sidebar { position: fixed; right: -320px; width: 320px; top: 0; bottom: 0; background: var(--nav-bg); border-left: 1px solid var(--border); transition: right 0.3s ease; z-index: 200; overflow-y: auto; padding: 20px 0; box-shadow: -5px 0 15px rgba(0,0,0,0.1); }
+        .sidebar.open { right: 0; }
+        .sidebar-title { font-family: 'Aref Ruqaa'; font-size: 20pt; color: var(--accent); text-align: center; margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 15px; }
+        .toc-item { display: block; width: 100%; text-align: right; background: none; border: none; font-family: 'Amiri'; font-size: 15pt; padding: 12px 20px; cursor: pointer; color: var(--text); border-bottom: 1px solid var(--border); transition: 0.2s; }
+        .toc-item:hover, .toc-item.active { background: rgba(184, 134, 11, 0.1); color: var(--accent); border-right: 4px solid var(--accent); }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 150; backdrop-filter: blur(2px); }
+        .overlay.open { display: block; }
+        .reader-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; min-height: 80vh; }
+        .chapter-content { font-size: ${bookData.size || 20}pt; line-height: 2.2; }
+        h1 { font-family: 'Aref Ruqaa'; color: var(--accent); text-align: center; margin-top: 40px; border-bottom: 2px dashed var(--border); padding-bottom: 20px; margin-bottom: 30px; font-size: 2em; }
+        .reader-cover { text-align: center; margin-bottom: 40px; padding-bottom: 40px; border-bottom: 2px solid var(--accent); }
+        .reader-cover img { max-width: 100%; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .reader-author { font-size: 1.2em; color: #888; margin-top: 15px; }
+        .bottom-nav { display: flex; justify-content: space-between; align-items: center; max-width: 900px; margin: 0 auto 50px auto; padding: 20px; border-top: 2px solid var(--border); }
+        .interactive-img { max-width: 100%; height: auto; border-radius: 12px; display: block; margin: 25px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .media-btn { background: var(--accent); color: #fff; border: none; padding: 10px 25px; border-radius: 25px; font-family: 'Amiri'; cursor: pointer; font-size: 15pt; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin: 15px auto; display: inline-block; }
+        .media-btn:hover { filter: brightness(1.1); transform: scale(1.05); }
+        #mediaModal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; }
+        .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 35pt; cursor: pointer; border: none; background: none; }
+        #mediaContainer { width: 95%; max-width: 800px; text-align: center; }
+        video, audio { width: 100%; border-radius: 10px; outline: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        <style id="dynamic-styles"><\/style>
+    </style>
+</head>
+<body>
+    <header>
+        <div><button class="nav-btn" onclick="toggleSidebar()">☰ الفهرس</button></div>
+        <div class="header-title">${bookData.title || 'كتاب تفاعلي'}</div>
+        <div style="display:flex;">
+            <button class="nav-btn" onclick="changeFontSize(2)">A+</button>
+            <button class="nav-btn" onclick="changeFontSize(-2)">A-</button>
+            <button class="nav-btn" onclick="toggleDarkMode()" title="الوضع الليلي">🌙</button>
+        </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-title">فهرس المحتويات</div>
+        <div id="toc-container"></div>
+    </div>
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="reader-container">
+        <div id="chapter-content" class="chapter-content">جاري التحميل...</div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn" id="btn-prev" onclick="navigateChapter(-1)">▶ الفصل السابق</button>
+        <span id="page-indicator" style="font-family:'Amiri'; font-size:14pt; color:var(--text); font-weight:bold;"></span>
+        <button class="nav-btn" id="btn-next" onclick="navigateChapter(1)">الفصل التالي ◀</button>
+    </div>
+
+    <div id="mediaModal">
+        <button class="close-modal" onclick="closeMedia()">✖</button>
+        <div id="mediaContainer"></div>
+    </div>
+
+    <script>
+        ${featuresStr}
+        const vault = ${vaultDataStr};
+        const rawContent = \`${content.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`;
+        const coverImg = \`${bookData.cover || ''}\`;
+        const bTitle = \`${bookData.title || ''}\`;
+        const bAuthor = \`${bookData.author || ''}\`;
+        const bDate = \`${bookData.date || ''}\`;
+        
+        let chapters = []; let currentChapterIndex = 0; let baseFontSize = ${bookData.size || 20};
+
+        function applyStyles(text, fns) {
+            let res = text;
+            if(typeof RoyalFeatures !== 'undefined') { for(let f in RoyalFeatures) { res = RoyalFeatures[f].execute(res, fns); } }
+            res = res.replace(/\\{وسائط:\\s*(.*?)\\}/g, (match, key) => {
+                let media = vault[key.trim()];
+                if(!media) return '<span style="color:red">[وسائط مفقودة: '+key+']</span>';
+                if(media.type === 'image') return '<img src="'+media.data+'" class="interactive-img">';
+                let icon = media.type === 'video' ? '🎥 فيديو' : '🎵 صوت';
+                return '<div style="text-align:center; margin: 20px 0;"><button class="media-btn" onclick="playMedia(\\''+key.trim()+'\\')">'+icon+' | تشغيل: '+key+'</button></div>';
+            });
+            return res;
+        }
+
+        let dynStyle = ""; if(typeof RoyalFeatures !== 'undefined') { for(let f in RoyalFeatures) { if(RoyalFeatures[f].css) dynStyle += RoyalFeatures[f].css + "\\n"; } }
+        document.head.innerHTML += "<style>" + dynStyle + "</style>";
+
+        function buildBookData() {
+            let coverHtml = '<div class="reader-cover">'; if(coverImg) coverHtml += '<img src="' + coverImg + '">';
+            coverHtml += '<h1>' + applyStyles(bTitle, []) + '</h1>'; coverHtml += '<div class="reader-author">' + applyStyles(bAuthor, []) + ' <br><span style="font-size:0.8em; color:gray;">' + bDate + '</span></div></div>';
+            chapters.push({ title: "الغلاف ومعلومات الكتاب", html: coverHtml });
+
+            let lines = rawContent.split('\\n'); let currentFns = []; let currentHtml = ""; let currentTitle = "مقدمة"; let hasContent = false;
+
+            lines.forEach(line => {
+                if(line.startsWith('# ')) {
+                    if(hasContent || currentHtml !== "") {
+                        if(currentFns.length > 0) {
+                            currentHtml += '<div style="border-top:1px solid var(--border); margin-top:40px; padding-top:15px; font-size:0.8em; color:gray;">';
+                            currentFns.forEach((f, i) => currentHtml += '<div style="margin-bottom:8px;">[' + (i+1) + '] ' + applyStyles(f, []) + '</div>'); currentHtml += '</div>'; currentFns = [];
+                        }
+                        chapters.push({ title: currentTitle, html: currentHtml });
+                    }
+                    currentTitle = line.replace('# ', '').trim(); currentHtml = '<h1>' + applyStyles(currentTitle, []) + '</h1>'; hasContent = true;
+                } else {
+                    if(line.trim() !== "") { currentHtml += '<div style="white-space: pre-wrap; margin-bottom:15px;">' + applyStyles(line, currentFns) + '</div>'; hasContent = true; } else if (hasContent) { currentHtml += '<br>'; }
+                }
+            });
+
+            if(hasContent || currentHtml !== "") {
+                if(currentFns.length > 0) { currentHtml += '<div style="border-top:1px solid var(--border); margin-top:40px; padding-top:15px; font-size:0.8em; color:gray;">'; currentFns.forEach((f, i) => currentHtml += '<div style="margin-bottom:8px;">[' + (i+1) + '] ' + applyStyles(f, []) + '</div>'); currentHtml += '</div>'; }
+                chapters.push({ title: currentTitle, html: currentHtml });
+            }
+        }
+
+        function renderTOC() { let tocContainer = document.getElementById('toc-container'); let html = ''; chapters.forEach((ch, i) => { html += '<button class="toc-item" onclick="goToChapter('+i+')">'+ch.title+'</button>'; }); tocContainer.innerHTML = html; }
+
+        function goToChapter(index) {
+            currentChapterIndex = index; document.getElementById('chapter-content').innerHTML = chapters[index].html;
+            document.querySelectorAll('.toc-item').forEach((btn, i) => { btn.className = 'toc-item' + (i === index ? ' active' : ''); });
+            document.getElementById('btn-prev').style.visibility = index === 0 ? 'hidden' : 'visible'; document.getElementById('btn-next').style.visibility = index === chapters.length - 1 ? 'hidden' : 'visible';
+            document.getElementById('page-indicator').innerText = (index + 1) + " / " + chapters.length;
+            window.scrollTo({ top: 0, behavior: 'smooth' }); toggleSidebar(true);
+        }
+
+        function navigateChapter(dir) { let newIndex = currentChapterIndex + dir; if(newIndex >= 0 && newIndex < chapters.length) goToChapter(newIndex); }
+        function toggleSidebar(forceClose = false) { let sidebar = document.getElementById('sidebar'); let overlay = document.getElementById('overlay'); if(forceClose || sidebar.classList.contains('open')) { sidebar.classList.remove('open'); overlay.classList.remove('open'); } else { sidebar.classList.add('open'); overlay.classList.add('open'); } }
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        function changeFontSize(amount) { baseFontSize += amount; if(baseFontSize < 12) baseFontSize = 12; if(baseFontSize > 40) baseFontSize = 40; document.getElementById('chapter-content').style.fontSize = baseFontSize + 'pt'; }
+
+        function playMedia(key) {
+            let media = vault[key]; if(!media) return; let container = document.getElementById('mediaContainer');
+            if(media.type === 'video') { container.innerHTML = '<video controls autoplay><source src="' + media.data + '"></video>'; } else if(media.type === 'audio') { container.innerHTML = '<audio controls autoplay><source src="' + media.data + '"></audio>'; }
+            document.getElementById('mediaModal').style.display = 'flex';
+        }
+
+        function closeMedia() { document.getElementById('mediaContainer').innerHTML = ''; document.getElementById('mediaModal').style.display = 'none'; }
+
+        buildBookData(); renderTOC(); goToChapter(0);
+        
+    <\/script>
+</body>
+</html>`;
+
+        let blob = new Blob([interactiveHTML], {type: "text/html;charset=utf-8"});
+        let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url;
+        a.download = (bookData.title || 'تطبيق_الكتاب') + '.html'; a.click(); URL.revokeObjectURL(url);
+    }
+
+    function downloadPDF() { window.print(); }
+    function toggleFocusMode() { document.body.classList.toggle('focus-mode'); document.getElementById('btnFocus').innerText = document.body.classList.contains('focus-mode') ? "إلغاء التركيز ❌" : "وضع التركيز 🎯"; }
+    function openBgModal() { document.getElementById('bgModal').style.display = 'flex'; renderBgList(); }
+    function closeBgModal() { document.getElementById('bgModal').style.display = 'none'; autoSaveAndBuild(); }
+    
+    function handleBgUpload(event) {
+        let pageNum = document.getElementById('bgPageNum').value;
+        if (!pageNum) return alert("الرجاء إدخال رقم الصفحة أولاً.");
+        let file = event.target.files[0]; if (!file) return;
+        let reader = new FileReader(); reader.onload = function(e) { customPageBackgrounds[pageNum] = e.target.result; renderBgList(); }; reader.readAsDataURL(file); event.target.value = ''; 
+    }
+
+    function addBgFromLink() {
+        let pageNum = document.getElementById('bgPageNum').value; let link = document.getElementById('bgLinkInput').value;
+        if (!pageNum || !link) return alert("الرجاء إدخال رقم الصفحة والرابط.");
+        customPageBackgrounds[pageNum] = link; renderBgList(); document.getElementById('bgLinkInput').value = '';
+    }
+
+    function removeBg(pageNum) { delete customPageBackgrounds[pageNum]; renderBgList(); }
+
+    function renderBgList() {
+        let html = '';
+        for (let p in customPageBackgrounds) {
+            let imgPreview = customPageBackgrounds[p].startsWith('data:image') ? customPageBackgrounds[p] : customPageBackgrounds[p];
+            html += `<div class="bg-item"><div style="display:flex; align-items:center; gap:10px;"><img src="${imgPreview}" alt="خلفية"><span>الصفحة: ${p}</span></div><button onclick="removeBg('${p}')" style="color:#d32f2f; border:none; background:none; cursor:pointer; font-size:14pt;">حذف ✖</button></div>`;
+        }
+        document.getElementById('bgList').innerHTML = html || "<div style='text-align:center; color:#888; padding: 10px;'>لا توجد خلفيات مخصصة</div>";
+    }
+
+    function handleCoverUpload(e) {
+        let file = e.target.files[0];
+        let reader = new FileReader();
+        reader.onload = (ev) => { document.getElementById('cCoverImg').value = ev.target.result; autoSaveAndBuild(); };
+        reader.readAsDataURL(file);
+    }
+    
+    function syncCodeFromPicker(c) { document.getElementById('colorCodeInput').value = c.replace('#', ''); updateGlobalColor(c); autoSaveAndBuild(); }
+    function syncPickerFromCode(c) { let fc = c.startsWith('#') ? c : `#${c}`; try{ document.getElementById('globalBgPicker').value=fc; updateGlobalColor(fc); autoSaveAndBuild(); }catch(e){} }
+    function updateGlobalColor(c) { document.documentElement.style.setProperty('--global-page-bg', c); }
+    function updateFontSize(s) { document.documentElement.style.setProperty('--global-font-size', s + 'pt'); }
+
+    // --- 7. التشغيل الأولي ---
+    window.onload = () => {
+        loadVaultFromDB((vaultData) => {
+            mediaVault = vaultData;
+            let s = JSON.parse(localStorage.getItem('bookData') || '{}');
+            
+            if(s.id) currentBookId = s.id; 
+            renderVaultList();
+            
+            if(s.text !== undefined || s.title !== undefined) {
+                document.getElementById('mainText').value = s.text || s.t || "";
+                document.getElementById('cTitle').value = s.title || "";
+                document.getElementById('cAuthor').value = s.author || "";
+                document.getElementById('cDate').value = s.date || "";
+                document.getElementById('cCoverImg').value = s.cover || s.coverImg || "";
+                document.getElementById('cFontSize').value = s.size || s.fontSize || 20;
+                document.getElementById('pageStyle').value = s.style || "style-islamic";
+                let savedColor = s.color || s.bgColor || "#FFFDD0"; 
+                if (!savedColor.startsWith('#')) savedColor = '#' + savedColor;
+                document.getElementById('globalBgPicker').value = savedColor;
+                document.getElementById('colorCodeInput').value = savedColor.replace('#', '');
+                updateGlobalColor(savedColor);
+                customPageBackgrounds = s.customBgs || {};
+            }
+            setTimeout(() => {
+                buildBook();
+                lastSavedData = JSON.stringify(getCurrentBookObject());
+            }, 500);
+        });
+    };
+</script>
+
+</body>
+</html>
