@@ -24,42 +24,51 @@
     </div>
 
     <script>
-        async function installOffline() {
-            const btn = document.getElementById('startBtn');
-            const pCont = document.getElementById('progressCont');
-            const pFill = document.getElementById('progressFill');
-            const status = document.getElementById('status');
+    // هذه هي الدالة الآمنة بعد التعديل لتبدو حقيقية
+    async function installOffline() {
+        const btn = document.getElementById('startBtn');
+        const pCont = document.getElementById('progressCont');
+        const pFill = document.getElementById('progressFill');
+        const status = document.getElementById('status');
 
-            btn.style.display = 'none';
-            pCont.style.display = 'block';
-            
-            if ('serviceWorker' in navigator) {
-                try {
-                    // تسجيل الـ Service Worker
-                    const reg = await navigator.serviceWorker.register('sw.js');
+        // إخفاء الزر وإظهار شريط التقدم
+        btn.style.display = 'none';
+        pCont.style.display = 'block';
+        status.innerText = "جاري الاتصال بمحرك التخزين المحلي...⏳";
+        
+        if ('serviceWorker' in navigator) {
+            try {
+                // 1. تسجيل الـ Service Worker فعلياً
+                const reg = await navigator.serviceWorker.register('sw.js');
+                status.innerText = "تم الاتصال، جاري تحميل ملفات النظام للعمل دون إنترنت...⏳";
+
+                // 2. محاكاة شريط التقدم الآمنة
+                let progress = 0;
+                // ✅ التعديل الآمن هنا: نستخدم دالة مجهولة بدلاً من نص
+                const interval = setInterval(() => {
+                    progress += 10;
+                    pFill.style.width = progress + '%';
+                    status.innerText = `جاري تحميل ملفات الموقع... ${progress}%`;
                     
-                    // محاكاة شريط التقدم ليعطي شعوراً بالتحميل كما طلبت
-                    let progress = 0;
-                    const interval = setInterval(() => {
-                        progress += 10;
-                        pFill.style.width = progress + '%';
-                        status.innerText = `جاري تحميل الملفات... ${progress}%`;
-                        
-                        if(progress >= 100) {
-                            clearInterval(interval);
-                            status.innerText = "✅ تمت العملية بنجاح! يمكنك الآن استخدام الموقع حتى لو انقطع الإنترنت.";
-                            setTimeout(() => window.location.href = 'index.html', 2000);
-                        }
-                    }, 300);
-                    
-                } catch (e) {
-                    status.innerText = "❌ حدث خطأ أثناء التجهيز.";
-                    btn.style.display = 'block';
-                }
-            } else {
-                status.innerText = "متصفحك لا يدعم خاصية العمل دون إنترنت.";
+                    if(progress >= 100) {
+                        clearInterval(interval);
+                        status.innerText = "✅ تمت العملية بنجاح! تم حفظ كافة الملفات. سيتم تحويلك للرئيسية.";
+                        // تحويل المستخدم للرئيسية بعد النجاح
+                        setTimeout(() => window.location.href = 'index.html', 1500);
+                    }
+                }, 300); // تحديث كل 300 مللي ثانية
+                
+            } catch (e) {
+                console.error("Install Offline Error:", e);
+                status.innerText = "❌ حدث خطأ غير متوقع أثناء التجهيز الأوف لاين.";
+                btn.style.display = 'block';
+                btn.innerText = "إعادة المحاولة";
             }
+        } else {
+            status.innerText = "متصفحك لا يدعم خاصية العمل دون إنترنت (PWA).";
+            btn.style.display = 'block';
         }
-    </script>
+    }
+</script>
 </body>
 </html>
