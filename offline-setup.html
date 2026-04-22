@@ -23,15 +23,15 @@
         <p id="status"></p>
     </div>
 
-    <script>
-    // هذه هي الدالة الآمنة بعد التعديل لتبدو حقيقية
+    // في ملف offline-setup.html
+
+<script>
     async function installOffline() {
         const btn = document.getElementById('startBtn');
         const pCont = document.getElementById('progressCont');
         const pFill = document.getElementById('progressFill');
         const status = document.getElementById('status');
 
-        // إخفاء الزر وإظهار شريط التقدم
         btn.style.display = 'none';
         pCont.style.display = 'block';
         status.innerText = "جاري الاتصال بمحرك التخزين المحلي...⏳";
@@ -40,11 +40,26 @@
             try {
                 // 1. تسجيل الـ Service Worker فعلياً
                 const reg = await navigator.serviceWorker.register('sw.js');
-                status.innerText = "تم الاتصال، جاري تحميل ملفات النظام للعمل دون إنترنت...⏳";
+                
+                // --- الإضافة الجديدة هنا: ننتظر حتى يصبح السويس ووركر نشطاً ---
+                if (!navigator.serviceWorker.controller) {
+                    status.innerText = "جاري تفعيل محرك التوف لاين لأول مرة... يرجى الانتظار⏳";
+                    await new Promise(resolve => {
+                        const listener = () => {
+                            if (navigator.serviceWorker.controller) {
+                                navigator.serviceWorker.removeEventListener('controllerchange', listener);
+                                resolve();
+                            }
+                        };
+                        navigator.serviceWorker.addEventListener('controllerchange', listener);
+                    });
+                }
+                // ------------------------------------------------------------
 
-                // 2. محاكاة شريط التقدم الآمنة
+                status.innerText = "تم الاتصال والتفعيل، جاري تحميل ملفات النظام للعمل دون إنترنت...⏳";
+
+                // 2. محاكاة شريط التقدم الآمنة (كما هي)
                 let progress = 0;
-                // ✅ التعديل الآمن هنا: نستخدم دالة مجهولة بدلاً من نص
                 const interval = setInterval(() => {
                     progress += 10;
                     pFill.style.width = progress + '%';
@@ -53,10 +68,9 @@
                     if(progress >= 100) {
                         clearInterval(interval);
                         status.innerText = "✅ تمت العملية بنجاح! تم حفظ كافة الملفات. سيتم تحويلك للرئيسية.";
-                        // تحويل المستخدم للرئيسية بعد النجاح
                         setTimeout(() => window.location.href = 'index.html', 1500);
                     }
-                }, 300); // تحديث كل 300 مللي ثانية
+                }, 300);
                 
             } catch (e) {
                 console.error("Install Offline Error:", e);
