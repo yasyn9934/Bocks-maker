@@ -1,11 +1,11 @@
-// sw.js
+// sw.js (الإصدار v3 المستقر)
 
-const CACHE_NAME = 'royal-book-v2'; // قمنا بتحديث الإصدار لإجبار المتصفح على التحديث
+const CACHE_NAME = 'royal-book-v3'; 
 
-// قائمة الملفات الشاملة والضرورية جداً للعمل دون إنترنت
+// قائمة الملفات الملكية الشاملة (تأكد من وجودها فعلياً في مجلدك)
 const urlsToCache = [
-  './',                  // تعني الصفحة الرئيسية (index.html)
-  'plugins.js',
+  './',                  // الصفحة الرئيسية (index.html)
+  'index.html',
   'editor.html',
   'login.html',
   'auth.js',
@@ -24,19 +24,37 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        // addAll ستحاول جلب كل الملفات، إذا فشل ملف واحد، تفشل العملية كلها
-        // وهذا ما نريده للتأكد من اكتمال النسخة
-        return cache.addAll(urlsToCache);
+        console.log('جاري حفظ ملفات النظام (أوف لاين) v3...⏳');
+        
+        // التعديل الآمن هنا: نستخدم addAll بشكل مرن
+        // بدلاً من addAll(urlsToCache) التي تفشل كلها لفشل ملف واحد
+        return Promise.all(
+            urlsToCache.map(url => {
+                // نطلب كل ملف على حدة، وإذا فشل، نسجله كخطأ دون إفشال العملية كلها
+                return cache.add(url).catch(error => {
+                    console.error('فشل تحميل الملف الأوف لاين:', url, error);
+                });
+            })
+        );
       })
       .then(() => self.skipWaiting()) // لتفعيل النسخة الجديدة فوراً
   );
 });
 
+// استراتيجية "الكاش أولاً، ثم الشبكة" (مستقرة للأوف لاين)
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
-      .then(response => {
-        return response || fetch(event.request);
+      .then(cachedResponse => {
+        if (cachedResponse) {
+          return cachedResponse; // إذا وجدناه محلياً، نرجعه فوراً
+        }
+        
+        // إذا لم نجده، نطلبه من الشبكة
+        return fetch(event.request).catch(() => {
+            // في حال فشل الكاش والشبكة، يمكنك إرجاع صفحة أوف لاين مخصصة هنا
+            // return caches.match('offline.html');
+        });
       })
   );
 });
