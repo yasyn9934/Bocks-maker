@@ -16,8 +16,7 @@ const urlsToCache = [
   'logo-512.png',
   'fonts/Amiri-Regular.ttf', // الخطوط ضرورية جداً
   'fonts/Amiri-Bold.ttf',
-  'fonts/ArefRuqaa-Regular.ttf',
-  'fonts/ArefRuqaa-Bold.ttf'
+  'fonts/ArefRuqaa-Regular.ttf'
 ];
 
 self.addEventListener('install', event => {
