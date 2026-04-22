@@ -4,7 +4,6 @@ const CACHE_NAME = 'royal-book-v3';
 
 // قائمة الملفات الملكية الشاملة (تأكد من وجودها فعلياً في مجلدك)
 const urlsToCache = [
-  './',                  // الصفحة الرئيسية (index.html)
   'index.html',
   'editor.html',
   'login.html',
