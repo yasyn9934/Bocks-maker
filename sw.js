@@ -41,18 +41,22 @@ self.addEventListener('install', event => {
 });
 
 // استراتيجية "الكاش أولاً، ثم الشبكة" (مستقرة للأوف لاين)
+// استراتيجية "الكاش أولاً، ثم الشبكة" مع حماية ضد الانهيار
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
+        // إذا وجدناه في الكاش، نرجعه
         if (cachedResponse) {
-          return cachedResponse; // إذا وجدناه محلياً، نرجعه فوراً
+          return cachedResponse;
         }
         
-        // إذا لم نجده، نطلبه من الشبكة
+        // إذا لم نجده، نطلبه من الشبكة.. 
+        // وأضفنا (.catch) هنا لكي لا ينهار النظام إذا فشل الرابط الخارجي
         return fetch(event.request).catch(() => {
-            // في حال فشل الكاش والشبكة، يمكنك إرجاع صفحة أوف لاين مخصصة هنا
-            // return caches.match('offline.html');
+            console.warn('⚠️ فشل جلب الرابط من الشبكة، تم تجاوز الخطأ:', event.request.url);
+            // نرجع استجابة فارغة بدلاً من أن ينهار السكريبت
+            return new Response('', { status: 404, statusText: 'Not Found' });
         });
       })
   );
