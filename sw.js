@@ -43,22 +43,24 @@ self.addEventListener('install', event => {
 
 // استراتيجية "الكاش أولاً، ثم الشبكة" (مستقرة للأوف لاين)
 // استراتيجية "الكاش أولاً، ثم الشبكة" مع حماية ضد الانهيار
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(cachedResponse => {
-        // إذا وجدناه في الكاش، نرجعه
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        
-        // إذا لم نجده، نطلبه من الشبكة.. 
-        // وأضفنا (.catch) هنا لكي لا ينهار النظام إذا فشل الرابط الخارجي
-        return fetch(event.request).catch(() => {
-            console.warn('⚠️ فشل جلب الرابط من الشبكة، تم تجاوز الخطأ:', event.request.url);
-            // نرجع استجابة فارغة بدلاً من أن ينهار السكريبت
-            return new Response('', { status: 404, statusText: 'Not Found' });
-        });
-      })
-  );
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request).then((response) => {
+            // إذا وجد الملف في الكاش، أرجعه
+            if (response) return response;
+
+            // إذا لم يوجد، حاول جلبه من الشبكة
+            return fetch(event.request).then((networkResponse) => {
+                // تأكد من أن الاستجابة صالحة قبل إرجاعها
+                if (!networkResponse || networkResponse.status !== 200) {
+                    return networkResponse;
+                }
+                return networkResponse;
+            }).catch(() => {
+                // في حال انقطاع الإنترنت تماماً وفشل الجلب
+                // يجب إرجاع صفحة أوف لاين أو استجابة فارغة بدلاً من ترك الوعد معلقاً
+                return new Response("خطأ في الاتصال"); 
+            });
+        })
+    );
 });
