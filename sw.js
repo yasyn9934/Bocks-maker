@@ -8,6 +8,7 @@ const urlsToCache = [
   'editor.html',
   'login.html',
   'royal-features-interactive-fixed.html',
+  'plugins.js',
   'auth.js',
   'PDFs/royal-assets.js',  // ملفات المحرك الملكي
   'PDFs/royal-parser.js',
