@@ -483,47 +483,53 @@
         }
     }
 
-    // --- Render Books & Search/Sort ---
-    function renderBooks() {
-        const container = document.getElementById('booksContainer');
-        container.innerHTML = '';
+   // --- Render Books & Search/Sort ---
+function renderBooks() {
+    const container = document.getElementById('booksContainer');
+    container.innerHTML = '';
 
-        let filteredBooks = applySearch(books);
-        filteredBooks = applySort(filteredBooks);
+    let filteredBooks = applySearch(books);
+    filteredBooks = applySort(filteredBooks);
 
-        if (filteredBooks.length === 0) {
-            container.innerHTML = '<div class="empty-state">لا توجد كتب مطابقة للعرض. ابدأ بإنشاء كتاب جديد!</div>';
-            return;
-        }
-
-        filteredBooks.forEach(book => {
-            const cat = categories.find(c => c.id === book.categoryId) || categories.find(c => c.id === 'default');
-            const coverUrl = book.cover || 'https://via.placeholder.com/300x400?text=بدون+غلاف';
-            
-            const card = document.createElement('div');
-            card.className = 'book-card';
-            card.innerHTML = `
-                <div class="card-header" onclick="event.stopPropagation()">
-                    <div class="card-title" title="${book.title}">${book.title || 'بدون عنوان'}</div>
-                    <div style="position:relative;">
-                        <button class="dots-btn" onclick="toggleMenu('${book.id}')">⋮</button>
-                        <div class="context-menu" id="menu_${book.id}">
-                            <button onclick="triggerAction('${book.id}', 'title')">تعديل عنوان الكتاب</button>
-                            <button onclick="triggerAction('${book.id}', 'quote')">وضع اقتباس مميز</button>
-                            <button onclick="triggerAction('${book.id}', 'category')">إضافة تصنيفات</button>
-                            <button onclick="openBook('${book.id}')">متابعة التحرير</button>
-                            <button onclick="deleteBook('${book.id}')">حذف الكتاب</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-cover" style="background-image: url('${coverUrl}')" onclick="openBook('${book.id}')">
-                    <div class="card-category" style="background-color: ${cat.color}">${cat.name}</div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
+    if (filteredBooks.length === 0) {
+        container.innerHTML = '<div class="empty-state">لا توجد كتب مطابقة للعرض. ابدأ بإنشاء كتاب جديد!</div>';
+        return;
     }
 
+    filteredBooks.forEach(book => {
+        const cat = categories.find(c => c.id === book.categoryId) || categories.find(c => c.id === 'default');
+        
+        // معالجة ذكية للغلاف لتجنب أخطاء 404
+        const coverUrl = book.cover || ''; 
+        const coverDisplay = coverUrl 
+            ? `background-image: url('${coverUrl}')` 
+            : `background-color: #eee; background-image: linear-gradient(45deg, #f3f3f3 25%, transparent 25%), linear-gradient(-45deg, #f3f3f3 25%, transparent 25%); background-size: 20px 20px;`;
+
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        card.innerHTML = `
+            <div class="card-header" onclick="event.stopPropagation()">
+                <div class="card-title" title="${book.title}">${book.title || 'بدون عنوان'}</div>
+                <div style="position:relative;">
+                    <button class="dots-btn" onclick="toggleMenu('${book.id}')">⋮</button>
+                    <div class="context-menu" id="menu_${book.id}">
+                        <button onclick="triggerAction('${book.id}', 'title')">تعديل عنوان الكتاب</button>
+                        <button onclick="triggerAction('${book.id}', 'quote')">وضع اقتباس مميز</button>
+                        <button onclick="triggerAction('${book.id}', 'cover')">تغيير الغلاف (رابط)</button>
+                        <button onclick="triggerAction('${book.id}', 'category')">تغيير التصنيف</button>
+                        <button onclick="openBook('${book.id}')" style="color: var(--royal-green); font-weight: bold;">متابعة التحرير</button>
+                        <button onclick="deleteBook('${book.id}')">حذف الكتاب</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-cover" style="${coverDisplay}" onclick="openBook('${book.id}')">
+                ${!coverUrl ? '<span style="position:absolute; top:45%; width:100%; text-align:center; color:#999;">بدون غلاف</span>' : ''}
+                <div class="card-category" style="background-color: ${cat.color}">${cat.name}</div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
     function toggleMenu(id) {
         document.querySelectorAll('.context-menu').forEach(m => {
             if(m.id !== 'menu_'+id) m.style.display = 'none';
@@ -547,13 +553,34 @@
     }
 
     function applySearch(list) {
-        const query = document.getElementById('searchInput').value.trim().toLowerCase();
-        if (!query) return list;
-        return list.filter(book => {
-            let targetText = ((book.title || "") + " " + (book.quote || "") + " " + (book.text || "")).toLowerCase();
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    if (!query) return list;
+
+    const criteria = document.getElementById('searchCriteria').value; // جزء، تطابق كلمة، تطابق حرف
+    const match = document.getElementById('searchMatch').value;       // الكل، البعض
+    const order = document.getElementById('searchOrder').value;       // دون ترتيب، بالترتيب
+
+    return list.filter(book => {
+        const targetText = ((book.title || "") + " " + (book.quote || "") + " " + (book.text || "")).toLowerCase();
+
+        if (criteria === 'partial') {
             return targetText.includes(query);
-        });
-    }
+        }
+
+        const queryParts = query.split(/\s+/); // تقسيم البحث لعدة كلمات
+
+        if (criteria === 'exact_word') {
+            if (match === 'all') {
+                return queryParts.every(part => targetText.includes(part));
+            } else {
+                return queryParts.some(part => targetText.includes(part));
+            }
+        }
+        
+        // الافتراضي في حال لم يتحقق ما سبق
+        return targetText.includes(query);
+    });
+}
 
     // --- Book Context Actions ---
     function triggerAction(bookId, action) {
