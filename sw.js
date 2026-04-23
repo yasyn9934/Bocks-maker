@@ -45,22 +45,29 @@ self.addEventListener('install', event => {
 // استراتيجية "الكاش أولاً، ثم الشبكة" مع حماية ضد الانهيار
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request).then((response) => {
-            // إذا وجد الملف في الكاش، أرجعه
-            if (response) return response;
+        caches.match(event.request).then((cachedResponse) => {
+            // 1. إذا كان الملف موجوداً في الكاش، أرجعه فوراً
+            if (cachedResponse) {
+                return cachedResponse;
+            }
 
-            // إذا لم يوجد، حاول جلبه من الشبكة
-            return fetch(event.request).then((networkResponse) => {
-                // تأكد من أن الاستجابة صالحة قبل إرجاعها
-                if (!networkResponse || networkResponse.status !== 200) {
+            // 2. إذا لم يكن في الكاش، جربه من الشبكة
+            return fetch(event.request)
+                .then((networkResponse) => {
+                    // تأكد من أن الاستجابة صالحة قبل إرجاعها
+                    if (!networkResponse || networkResponse.status !== 200) {
+                        return networkResponse;
+                    }
                     return networkResponse;
-                }
-                return networkResponse;
-            }).catch(() => {
-                // في حال انقطاع الإنترنت تماماً وفشل الجلب
-                // يجب إرجاع صفحة أوف لاين أو استجابة فارغة بدلاً من ترك الوعد معلقاً
-                return new Response("خطأ في الاتصال"); 
-            });
+                })
+                .catch(() => {
+                    // 3. الحل السحري: إذا فشلت الشبكة (مثل صورة placeholder)
+                    // نرجو إرجاع "استجابة فارغة" بدلاً من إرسال Error يحطم الـ SW
+                    return new Response('Network error occurred', {
+                        status: 408,
+                        statusText: 'Network error occurred'
+                    });
+                });
         })
     );
 });
