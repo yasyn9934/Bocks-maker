@@ -612,7 +612,7 @@ function renderBooks() {
             <div class="card-header" onclick="event.stopPropagation()">
                 <div class="card-title" title="${book.title}">${book.title || 'بدون عنوان'}</div>
                 <div style="position:relative;">
-                    <button class="dots-btn" onclick="toggleMenu('${book.id}')">⋮</button>
+                    <button class="dots-btn" onclick="openBookPreview('${book.id}')">⋮</button>
                     <div class="context-menu" id="menu_${book.id}">
                         <button onclick="triggerAction('${book.id}', 'title')">تعديل عنوان الكتاب</button>
                         <button onclick="triggerAction('${book.id}', 'quote')">وضع اقتباس مميز</button>
