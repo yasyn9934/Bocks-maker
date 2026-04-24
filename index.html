@@ -659,7 +659,31 @@ function confirmManualSync() {
         .catch(err => console.error('فشل تفعيل المحرك ❌', err));
     });
   }
+// دالة التحقق من حالة التطبيق
+function updateSyncButtonVisibility() {
+    // ضع المعرف (ID) الخاص بزر المزامنة هنا
+    const syncBtn = document.getElementById('syncButtonId'); 
+    
+    if (!syncBtn) return;
 
+    // التحقق مما إذا كان الموقع مفتوحاً كتطبيق مستقل (PWA)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    if (isStandalone) {
+        syncBtn.style.display = 'inline-block'; // إظهار الزر
+        console.log("النسخة المحلية تعمل: تم إظهار زر المزامنة.");
+    } else {
+        syncBtn.style.display = 'none'; // إخفاء الزر
+    }
+}
+
+// تشغيل الفحص فور تحميل الصفحة
+window.addEventListener('DOMContentLoaded', updateSyncButtonVisibility);
+
+// متابعة التغيير في حال قام المستخدم بتثبيت التطبيق وهو يتصفح الموقع
+window.matchMedia('(display-mode: standalone)').addEventListener('change', (evt) => {
+    updateSyncButtonVisibility();
+});
 </script>
 <div class="royal-fab" onclick="toggleFabModal()">
     <span style="font-size: 24px;">⚙️</span>
@@ -673,7 +697,7 @@ function confirmManualSync() {
         <div class="fab-option" onclick="startOfflineSetup()">
             <span>📦</span> &nbsp; تحميل الموقع (نسخة دون انترنت)
         </div>
-        <div class="fab-option" onclick="confirmManualSync()">
+        <div class="fab-option" id="syncButtonId" onclick="confirmManualSync()">
         <span>🔄</span> &nbsp; مزامنة البيانات مع هذه النسخة
         </div>
         <div class="fab-option">
