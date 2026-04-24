@@ -237,7 +237,7 @@
     <div id="book-container"></div>
 
 <script>
-    // المتغيرات العامة
+    // --- المتغيرات العامة المحدثة ---
     let lastSavedData = ""; 
     let mediaVault = {};
     let customPageBackgrounds = {};
@@ -245,10 +245,16 @@
     let uploadedBookData = null;
     let searchTimer; 
     let searchResultsList = [];
+    
+    // إضافات جديدة لدعم الميزات الملكية
+    let currentBookCategories = []; // مصفوفة لتخزين تصنيفات الكتاب الحالي
+    let bookHighlights = []; // مصفوفة لتخزين الاقتباسات المميزة
+    let customCardImage = null; // لتخزين شفرة (Base64) لصورة البطاقة المخصصة
+
     const DB_NAME = 'RoyalBookDB';
     const VAULT_STORE = 'mediaVaultStore';
 
-    // --- 1. المزامنة والتحقق من التغييرات ---
+    // --- 1. المزامنة والتحقق من التغييرات (نسخة مطورة) ---
     function getCurrentBookObject() {
         return {
             id: currentBookId || 'book_' + Date.now(),
@@ -260,6 +266,12 @@
             style: document.getElementById('pageStyle').value,
             size: document.getElementById('cFontSize').value,
             cover: document.getElementById('cCoverImg').value,
+            
+            // الميزات الجديدة التي سنقوم بمزامنتها
+            categories: currentBookCategories, // حفظ التصنيفات (مزامنة سحابية)
+            highlights: bookHighlights, // حفظ الاقتباسات المميزة
+            cardImage: customCardImage, // حفظ صورة البطاقة (سواء كانت غلاف أو صورة خارجية مشفرة)
+            
             customBgs: customPageBackgrounds,
             updatedAt: Date.now()
         };
