@@ -494,6 +494,7 @@
     </div>
 
     <script>
+        let allBooks = []; // هذه المصفوفة يجب أن تحتوي على كل الكتب المحملة
     // 1. تهيئة البيانات
     let books = JSON.parse(localStorage.getItem('royal_books_list') || '[]');
     let categories = JSON.parse(localStorage.getItem('royal_categories_list') || '[]');
@@ -612,7 +613,7 @@ function renderBooks() {
             <div class="card-header" onclick="event.stopPropagation()">
                 <div class="card-title" title="${book.title}">${book.title || 'بدون عنوان'}</div>
                 <div style="position:relative;">
-                    <button class="dots-btn" onclick="openBookPreview('${book.id}')">⋮</button>
+                    <button onclick="openBookPreview('${book.id}')">⋮</button>
                     <div class="context-menu" id="menu_${book.id}">
                         <button onclick="triggerAction('${book.id}', 'title')">تعديل عنوان الكتاب</button>
                         <button onclick="triggerAction('${book.id}', 'quote')">وضع اقتباس مميز</button>
@@ -788,9 +789,16 @@ window.matchMedia('(display-mode: standalone)').addEventListener('change', (evt)
 
         // فتح النافذة وعرض بيانات الكتاب
 function openBookPreview(bookId) {
-    const book = allBooks.find(b => b.id === bookId); // بافتراض وجود مصفوفة بكل الكتب
-    if (!book) return;
+    const oldMenu = document.getElementById('oldMenuId'); 
+    if(oldMenu) oldMenu.style.display = 'none';
 
+    // 2. البحث عن بيانات الكتاب في المصفوفة
+    const book = allBooks.find(b => b.id === bookId);
+    
+    if (!book) {
+        console.error("عذراً، لم يتم العثور على بيانات هذا الكتاب.");
+        return;
+    }
     currentBookId = bookId;
     document.getElementById('modalBookTitle').innerText = book.title;
     
