@@ -303,6 +303,106 @@
         .context-menu button:last-child:hover { background: #ffebee; }
 
         .empty-state { text-align: center; padding: 50px; font-size: 18pt; color: #777; grid-column: 1 / -1; }
+
+        /* نافذة معاينة الكتاب الملكية */
+.book-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: none; /* مخفية افتراضياً */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.book-modal-content {
+    background: white;
+    width: 90%;
+    max-width: 900px;
+    height: 80vh;
+    border-radius: 20px;
+    display: flex; /* لتقسيم الشاشة يمين ويسار */
+    overflow: hidden;
+    animation: slideUp 0.4s ease-out;
+}
+
+/* جهة اليمين: المعلومات والاختيارات */
+.modal-info-side {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    border-left: 1px solid #eee;
+    text-align: right;
+}
+
+/* جهة اليسار: المعاينة المصغرة */
+.modal-preview-side {
+    flex: 1;
+    background: #f9f9f9;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto; /* للسماح بالتقليب العمودي */
+}
+
+.mini-page {
+    width: 200px;
+    height: 280px;
+    background: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+
+    .highlights-container {
+    background: #fff8e1;
+    border-right: 4px solid var(--royal-gold);
+    padding: 10px;
+    margin: 20px 0;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.quote {
+    font-style: italic;
+    font-size: 13pt;
+    color: #5d4037;
+    margin-bottom: 8px;
+}
+
+.modal-actions button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    text-align: right;
+    padding: 12px;
+    background: #f4f6f8;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.modal-actions button:hover {
+    background: var(--royal-green);
+    color: white;
+}
+
+.dropdown-menu {
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
     </style>
 </head>
 <body>
@@ -684,6 +784,59 @@ window.addEventListener('DOMContentLoaded', updateSyncButtonVisibility);
 window.matchMedia('(display-mode: standalone)').addEventListener('change', (evt) => {
     updateSyncButtonVisibility();
 });
+
+
+        // فتح النافذة وعرض بيانات الكتاب
+function openBookPreview(bookId) {
+    const book = allBooks.find(b => b.id === bookId); // بافتراض وجود مصفوفة بكل الكتب
+    if (!book) return;
+
+    currentBookId = bookId;
+    document.getElementById('modalBookTitle').innerText = book.title;
+    
+    // عرض الاقتباسات
+    const highCont = document.getElementById('modalHighlights');
+    highCont.innerHTML = book.highlights && book.highlights.length > 0 
+        ? book.highlights.map(h => `<p class="quote">"${h}"</p>`).join('')
+        : "<p style='color:#999'>لا توجد اقتباسات مميزة بعد.</p>";
+
+    // توليد المعاينة المصغرة (محاكاة صفحات)
+    const previewCont = document.getElementById('modalPreview');
+    previewCont.innerHTML = ""; // مسح القديم
+    for(let i=1; i<=3; i++) { // نعرض أول 3 صفحات كمعاينة
+        let page = document.createElement('div');
+        page.className = 'mini-page';
+        page.innerHTML = `<div style="padding:10px; font-size:8px">${book.text.substring(i*500, (i+1)*500)}...</div>`;
+        previewCont.appendChild(page);
+    }
+
+    document.getElementById('bookModal').style.display = 'flex';
+}
+
+// إغلاق النافذة عند النقر في الخارج
+function closeModalOutside(event) {
+    document.getElementById('bookModal').style.display = 'none';
+    hideImageInput(); // تنظيف الواجهة عند الإغلاق
+}
+
+// منطق تبديل صور البطاقة
+function showCardImageOptions() {
+    const menu = document.getElementById('cardImageOptions');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+// تحويل الصورة لشفرة Base64 لتخزينها أوف لاين
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            customCardImage = e.target.result; // هذه هي الشفرة المشفرة
+            alert("تم جلب الصورة بنجاح، اضغط تأكيد للحفظ.");
+        };
+        reader.readAsDataURL(file);
+    }
+}
 </script>
 <div class="royal-fab" onclick="toggleFabModal()">
     <span style="font-size: 24px;">⚙️</span>
@@ -715,5 +868,43 @@ window.matchMedia('(display-mode: standalone)').addEventListener('change', (evt)
     </div>
 </div>
 
+
+    <div id="bookModal" class="book-modal-overlay" onclick="closeModalOutside(event)">
+    <div class="book-modal-content" onclick="event.stopPropagation()">
+        
+        <div class="modal-info-side">
+            <h2 id="modalBookTitle">عنوان الكتاب</h2>
+            <div id="modalHighlights" class="highlights-container">
+                </div>
+            
+            <div class="modal-actions">
+                <button onclick="openEditor()">📝 تحرير الكتاب</button>
+                <button onclick="toggleCategoryMenu()">🏷️ إلحاق بتصنيف</button>
+                <button onclick="showCardImageOptions()">🖼️ تعديل صورة البطاقة</button>
+                <button onclick="confirmDeleteBook()" style="background:#8b0000">🗑️ حذف الكتاب</button>
+            </div>
+
+            <div id="cardImageOptions" class="dropdown-menu" style="display:none">
+                <button onclick="generateCoverFromBook()">نفس غلاف الكتاب</button>
+                <button onclick="showImageInput('url')">رابط خارجي</button>
+                <button onclick="showImageInput('file')">صورة من الجهاز</button>
+                
+                <div id="imageInputArea" style="margin-top:10px; display:none">
+                    <input type="text" id="externalUrl" placeholder="ضع رابط الصورة هنا">
+                    <input type="file" id="localFile" style="display:none" onchange="handleFileSelect(event)">
+                    <button id="fileBtn" onclick="document.getElementById('localFile').click()">اختر ملف</button>
+                    <div class="confirm-btns">
+                        <button onclick="applyCardImage()">تأكيد</button>
+                        <button onclick="hideImageInput()">إلغاء</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="modalPreview" class="modal-preview-side">
+            </div>
+
+    </div>
+</div>
 </body>
 </html>
