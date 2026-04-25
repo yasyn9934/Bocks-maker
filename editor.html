@@ -238,6 +238,7 @@
 
 <script>
     // --- المتغيرات العامة المحدثة ---
+    let indexPage = "./"
     let lastSavedData = ""; 
     let mediaVault = {};
     let customPageBackgrounds = {};
@@ -283,15 +284,15 @@
 
     function handleBackAction() {
         if (isDataChanged()) document.getElementById('confirmModal').style.display = 'flex';
-        else window.location.href = 'index.html';
+        else window.location.href = indexPage;
     }
 
     function closeConfirmModal() { document.getElementById('confirmModal').style.display = 'none'; }
-    function exitWithoutSaving() { window.location.href = 'index.html'; }
+    function exitWithoutSaving() { window.location.href = indexPage; }
 
     async function saveAndExit() {
         await saveToDrive(); 
-        window.location.href = 'index.html';
+        window.location.href = indexPage;
     }
 
     async function saveToDrive() {
