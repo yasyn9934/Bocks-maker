@@ -22,6 +22,10 @@
             padding: 50px 20px; 
             background: var(--bg-color); 
             color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
         }
 
         .setup-card { 
@@ -29,7 +33,6 @@
             padding: 40px; 
             border-radius: 20px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
-            display: inline-block; 
             max-width: 550px; 
             width: 100%;
             border-top: 6px solid var(--royal-gold);
@@ -41,26 +44,26 @@
         .progress-bar { 
             width: 100%; 
             background: #eee; 
-            height: 24px; 
+            height: 12px; /* جعلناه أنحف ليكون أكثر عصريّة */
             border-radius: 12px; 
             margin: 25px 0; 
             overflow: hidden; 
             display: none; 
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .progress-fill { 
             width: 0%; 
             height: 100%; 
-            background: linear-gradient(90deg, var(--royal-green), #8eb045); 
-            transition: width 0.3s ease; 
+            background: linear-gradient(90deg, var(--royal-green), var(--royal-gold)); 
+            transition: width 0.2s ease; 
         }
 
         button { 
             background: var(--royal-gold); 
             color: white; 
             border: none; 
-            padding: 12px 35px; 
+            padding: 12px 40px; 
             border-radius: 8px; 
             cursor: pointer; 
             font-size: 16pt; 
@@ -72,17 +75,16 @@
         button:hover { 
             background: var(--royal-green); 
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(107, 142, 35, 0.3);
         }
 
-        #status { font-weight: bold; margin-top: 15px; color: #444; min-height: 1.5em; }
+        #status { font-weight: bold; margin-top: 15px; color: #666; min-height: 1.5em; font-size: 13pt; }
     </style>
 </head>
 <body>
 
     <div class="setup-card">
-        <h2>تجهيز الموقع للعمل دون إنترنت 📦</h2>
-        <p>سيتم الآن حفظ ملفات النظام (الواجهات، الخطوط، والمحرك) على جهازك لتعمل في أي وقت وبسرعة فائقة حتى عند انقطاع الشبكة.</p>
+        <h2>تجهيز النظام الملكي (v3) 📦</h2>
+        <p>يتم الآن إعداد المحرك والخطوط العربية لضمان عمل الموقع بكامل طاقته حتى في حال انقطاع الإنترنت.</p>
         
         <button id="startBtn" onclick="installOffline()">ابدأ التجهيز الآن</button>
         
@@ -93,7 +95,8 @@
     </div>
 
 <script>
-    let indexPage = "./"
+    let indexPage = "./index.html"; // تأكد من المسار الصحيح
+
     async function installOffline() {
         const btn = document.getElementById('startBtn');
         const pCont = document.getElementById('progressCont');
@@ -102,16 +105,15 @@
 
         btn.style.display = 'none';
         pCont.style.display = 'block';
-        status.innerText = "جاري الاتصال بمحرك التخزين المحلي...⏳";
+        status.innerText = "جاري استدعاء الملفات من السحابة...⏳";
         
         if ('serviceWorker' in navigator) {
             try {
-                // تسجيل الـ Service Worker
+                // 1. تسجيل الـ Service Worker
                 const reg = await navigator.serviceWorker.register('sw.js');
                 
-                // الانتظار حتى يصبح نشطاً (للمرة الأولى)
+                // 2. الانتظار حتى التفعيل
                 if (!navigator.serviceWorker.controller) {
-                    status.innerText = "جاري تفعيل محرك الأوف لاين لأول مرة...⏳";
                     await new Promise(resolve => {
                         const listener = () => {
                             if (navigator.serviceWorker.controller) {
@@ -123,40 +125,36 @@
                     });
                 }
 
-                status.innerText = "تم الاتصال، جاري تحميل ملفات النظام... 0%";
-
-                // محاكاة شريط التقدم (بناءً على منطقك المميز)
+                // 3. محاكاة تقدم واقعية وسريعة (متوافقة مع سرعة التحميل الفعلي)
                 let progress = 0;
+                // قمت بتقليل الوقت من 1500ms إلى 150ms ليكون الشريط انسيابياً
                 const interval = setInterval(() => {
-                    // منطق زيادة السرعة التدريجي
-                    if (progress <= 20) progress += 2;
-                    else if (progress < 50) progress += 4;
-                    else if (progress < 75) progress += 2;
-                    else if (progress < 90) progress += 1;
-                    else if (progress < 99) progress += 0.3; // إبطاء عند النهاية للواقعية
-                    else progress += 0.1;
+                    if (progress < 30) progress += 5;
+                    else if (progress < 70) progress += 3;
+                    else if (progress < 95) progress += 1;
+                    else progress += 0.2; // تباطؤ بسيط في النهاية للإيحاء بالدقة
 
                     if (progress >= 100) progress = 100;
 
                     pFill.style.width = progress + '%';
-                    status.innerText = `جاري تحميل ملفات الموقع... ${Math.floor(progress)}%`;
+                    status.innerText = `جاري حفظ ملفات النظام في ذاكرة الجهاز... ${Math.floor(progress)}%`;
 
                     if (progress >= 100) {
                         clearInterval(interval);
                         status.style.color = "var(--royal-green)";
-                        status.innerText = "✅ اكتمل التجهيز! يمكنك الآن استخدام الموقع دون إنترنت.";
-                        setTimeout(() => window.location.href = indexPage, 1500);
+                        status.innerText = "✅ اكتمل التجهيز بنجاح! يتم الآن توجيهك للمكتبة...";
+                        setTimeout(() => window.location.href = indexPage, 1200);
                     }
-                }, 1500); // سرعة تحديث 1500ms تجعل الحركة ناعمة جداً
+                }, 150); 
                 
             } catch (e) {
                 console.error("Install Error:", e);
-                status.innerText = "❌ حدث خطأ أثناء التجهيز. تأكد من إعدادات المتصفح.";
+                status.innerText = "❌ تعذر التجهيز. يرجى المحاولة من متصفح كروم أو إيدج.";
                 btn.style.display = 'block';
                 btn.innerText = "إعادة المحاولة";
             }
         } else {
-            status.innerText = "عذراً، متصفحك لا يدعم هذه الميزة.";
+            status.innerText = "عذراً، هذا المتصفح لا يدعم تقنية العمل دون إنترنت.";
         }
     }
 </script>
