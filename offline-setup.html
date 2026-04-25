@@ -95,7 +95,7 @@
     </div>
 
 <script>
-    let indexPage = "./index.html"; // تأكد من المسار الصحيح
+    let indexPage = "index.html"; // تأكد من المسار الصحيح
 
     async function installOffline() {
     const btn = document.getElementById('startBtn');
@@ -155,39 +155,6 @@
         status.innerText = "المتصفح لا يدعم العمل دون اتصال.";
     }
 }
-
-                // 3. محاكاة تقدم واقعية وسريعة (متوافقة مع سرعة التحميل الفعلي)
-                let progress = 0;
-                // قمت بتقليل الوقت من 1500ms إلى 150ms ليكون الشريط انسيابياً
-                const interval = setInterval(() => {
-                    if (progress < 30) progress += 5;
-                    else if (progress < 70) progress += 3;
-                    else if (progress < 95) progress += 1;
-                    else progress += 0.2; // تباطؤ بسيط في النهاية للإيحاء بالدقة
-
-                    if (progress >= 100) progress = 100;
-
-                    pFill.style.width = progress + '%';
-                    status.innerText = `جاري حفظ ملفات النظام في ذاكرة الجهاز... ${Math.floor(progress)}%`;
-
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        status.style.color = "var(--royal-green)";
-                        status.innerText = "✅ اكتمل التجهيز بنجاح! يتم الآن توجيهك للمكتبة...";
-                        setTimeout(() => window.location.href = indexPage, 1200);
-                    }
-                }, 150); 
-                
-            } catch (e) {
-                console.error("Install Error:", e);
-                status.innerText = "❌ تعذر التجهيز. يرجى المحاولة من متصفح كروم أو إيدج.";
-                btn.style.display = 'block';
-                btn.innerText = "إعادة المحاولة";
-            }
-        } else {
-            status.innerText = "عذراً، هذا المتصفح لا يدعم تقنية العمل دون إنترنت.";
-        }
-    }
 </script>
 </body>
 </html>
