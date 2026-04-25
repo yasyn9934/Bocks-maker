@@ -3,7 +3,7 @@
 const CACHE_NAME = 'royal-book-v3'; 
 
 const urlsToCache = [
-  './',
+  
   'index.html',
   'editor.html',
   'login.html',
