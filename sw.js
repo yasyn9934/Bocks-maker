@@ -21,6 +21,13 @@ const urlsToCache = [
   'fonts/ArefRuqaa-Bold.ttf'
 ];
 
+// أضف هذا الجزء في ملف sw.js تحت حدث الـ install
+
+self.addEventListener('activate', event => {
+    console.log('النظام الملكي v3 جاهز للعمل... 🚀');
+    event.waitUntil(clients.claim()); // هذا هو السطر السحري الذي سيحرك الشريط
+});
+
 // مرحلة التثبيت: حفظ الملفات بمرونة
 self.addEventListener('install', event => {
   event.waitUntil(
