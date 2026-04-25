@@ -1064,34 +1064,32 @@ function saveData() {
 
 // 2. محرك المعاينة المطور (المطابق للمحرر)
 function openBookPreview(bookId) {
-    activeBookId = bookId;
+    currentActionBookId = bookId;
     const book = books.find(b => b.id === bookId);
     if(!book) return;
 
     document.getElementById('modalBookTitle').innerText = book.title;
     document.getElementById('modalBookQuote').innerText = book.quote ? `"${book.quote}"` : "لا يوجد اقتباس.";
-
+    updateFavBtn(book);
     const previewCont = document.getElementById('modalPreview');
     previewCont.innerHTML = ""; 
-    
+    previewCont.style.overflowY = "auto";
+
     // جلب الإعدادات الأصلية من الكتاب
     const settings = book.settings || {};
     const pageStyleClass = book.pageStyle || 'style-modern'; // النمط المختار في المحرر
 
     const renderPage = (contentHtml) => {
+        if(!contentHtml) return
         const wrapper = document.createElement('div');
         wrapper.className = 'page-wrapper'; // حاوية للتحكم في الحجم
-        
-        const page = document.createElement('div');
-        page.className = `full-page ${pageStyleClass}`;
-        page.style.backgroundColor = settings.pageColor || '#fff';
-        page.style.color = settings.textColor || '#000';
-        
-        // استخدام المحرك الملكي لمعالجة النصوص (Plugins & Features)
-        page.innerHTML = contentHtml;
-        
-        wrapper.appendChild(page);
-        previewCont.appendChild(wrapper);
+            const page = document.createElement('div');
+            page.className = `full-page ${pageStyleClass}`;
+            page.style.backgroundColor = settings.pageColor || '#fff';
+            page.style.color = settings.textColor || '#000';
+            page.innerHTML = applyRoyalStyles(contentHtml); // تطبيق التنسيقات الملكية
+            wrapper.appendChild(page);
+            previewCont.appendChild(wrapper);
     };
 
     // عرض الغلاف، الفهرس، ثم الصفحات
@@ -1260,7 +1258,1332 @@ function openBookPreview(bookId) {
     }
 
     // 3. دالة توليد صورة البطاقة المطابقة للغلاف
-function setCoverFromBookData() {
+function generateCoverFromBook() {
+    const book = books.find(b => b.id === activeBookId);
+    const canvas = document.createElement('canvas');
+    canvas.width = 400; canvas.height = 600;
+    const ctx = canvas.getContext('2d');
+
+    // محاكاة نمط الغلاف (Style)
+    const bgColor = book.settings?.pageColor || '#fdfaf0';
+    const textColor = book.settings?.textColor || '#2c3e50';
+
+    // رسم الخلفية
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // إذا كان هناك صورة غلاف أصلية، نرسمها كخلفية مصغرة
+    if (book.cCoverImg) {
+        const img = new Image();
+        img.onload = function() {
+            ctx.globalAlpha = 0.3; // جعلها شفافة قليلاً خلف النصوص
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = 1.0;
+            drawText();
+        };
+        img.src = book.cCoverImg;
+    } else {
+        drawText();
+    }
+    function drawText() {
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'center';
+        
+        // العنوان (بخط عريض)
+        ctx.font = 'bold 32px Arial';
+        ctx.fillText(book.title || 'بدون عنوان', canvas.width/2, 200);
+        
+        // المؤلف
+        ctx.font = '22px Arial';
+        ctx.fillText(book.author || '', canvas.width/2, 260);
+        
+        // التاريخ في الأسفل
+        ctx.font = '16px Arial';
+        ctx.fillText(book.date || '', canvas.width/2, 550);
+
+        // إطار ملكي ذهبي
+        ctx.strokeStyle = '#b8860b';
+        ctx.lineWidth = 8;
+        ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
+
+        book.coverImage = canvas.toDataURL('image/jpeg', 0.8);
+        book.autoCardImage = true; // علامة ليعرف النظام أنها تلقائية
+        finalizeImageUpdate();
+    }
+}
+
+
+    function finalizeImageUpdate() {
+        saveData();
+        renderBooks();
+        hideImageInput();
+        alert("تم تحديث صورة بطاقة الكتاب بنجاح.");
+        document.getElementById('bookModal').style.display = 'none';
+    }
+
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <script src="auth.js"></script>
+    <script src="plugins.js"></script>
+    <title>موقع صانع الكتب - الرئيسية</title>
+    <style>
+        @font-face { font-family: 'Amiri'; src: url('fonts/Amiri-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+        @font-face { font-family: 'Aref Ruqaa'; src: url('fonts/ArefRuqaa-Bold.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+
+        :root {
+            --royal-gold: #b8860b;
+            --royal-green: #6B8E23;
+            --bg-color: #f4f6f8;
+            --text-color: #333;
+            --card-bg: #fff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Amiri', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            border-top: 6px solid var(--royal-gold);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .header h1 {
+            font-family: 'Aref Ruqaa', serif;
+            font-size: 38pt;
+            color: var(--royal-green);
+            margin-bottom: 15px;
+        }
+        .header p {
+            font-size: 16pt;
+            line-height: 1.8;
+            color: #555;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Action Buttons */
+        .top-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        .btn {
+            font-family: 'Aref Ruqaa', serif;
+            font-size: 16pt;
+            padding: 12px 25px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.1); opacity: 0; transition: opacity 0.3s;
+        }
+        .btn:hover::after { opacity: 1; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+        .btn-info { background-color: #1976d2; }
+        .btn-primary { background-color: var(--royal-green); }
+        .btn-secondary { background-color: var(--royal-gold); }
+
+        /* Toolbar (Search & Sort) */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .sort-group, .search-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+            min-width: 300px;
+        }
+        .toolbar label { font-family: 'Aref Ruqaa', serif; font-size: 14pt; color: #4a3f35; }
+        .toolbar select, .toolbar input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            font-family: 'Amiri', serif;
+            font-size: 14pt;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .toolbar select:focus, .toolbar input[type="text"]:focus {
+            border-color: var(--royal-gold);
+        }
+        .search-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed #ccc;
+        }
+        .search-options select { padding: 8px; font-size: 12pt; }
+
+        /* Books Grid */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        /* Book Card */
+        .book-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            transition: 0.3s;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 380px;
+            border: 1px solid #eef0f2;
+        }
+        .book-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); border-color: var(--royal-gold); }
+        .card-header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            background: #fafbfc;
+            z-index: 2;
+        }
+        .card-title {
+            font-family: 'Aref Ruqaa', serif;
+            font-size: 16pt;
+            color: #2c3e50;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-left: 10px;
+        }
+
+        /* زر النقاط الثلاث المطور */
+        .dots-btn {
+            background: #f4f6f8;
+            border: 1px solid transparent;
+            font-size: 18pt;
+            cursor: pointer;
+            color: #555;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .dots-btn:hover {
+            background: var(--royal-gold);
+            color: white;
+            transform: rotate(90deg);
+            box-shadow: 0 2px 8px rgba(184, 134, 11, 0.4);
+        }
+
+        .card-cover {
+            flex: 1;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #e9ecef;
+            position: relative;
+        }
+        .card-category {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            color: white;
+            font-size: 11pt;
+            font-family: 'Amiri', serif;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        /* علامة المفضلة على البطاقة */
+        .fav-heart {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 22px;
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* Multi-select categories container (من النسخة الجديدة) */
+        .card-categories-container {
+            position: absolute; bottom: 10px; right: 10px; display: flex; flex-wrap: wrap; gap: 5px; max-width: 90%;
+        }
+        .card-category-tag { padding: 4px 10px; border-radius: 20px; color: white; font-size: 10pt; font-family: 'Amiri', serif; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            display: none; align-items: center; justify-content: center; z-index: 10000;
+            backdrop-filter: blur(3px);
+        }
+        .modal-content {
+            background: #fff; padding: 30px; border-radius: 16px;
+            width: 90%; max-width: 450px; text-align: center;
+            border-top: 6px solid var(--royal-gold);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .modal-title { font-family: 'Aref Ruqaa', serif; font-size: 20pt; margin-bottom: 20px; color: var(--royal-green); }
+        .modal-input {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            font-family: 'Amiri', serif; font-size: 14pt;
+            border: 1px solid #ccc; border-radius: 8px;
+        }
+        .modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+        .empty-state { text-align: center; padding: 50px; font-size: 18pt; color: #777; grid-column: 1 / -1; }
+
+        /* Multi-select styling for categories */
+        .cat-checkbox-group { text-align: right; max-height: 200px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
+        .cat-checkbox-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 14pt; }
+        .cat-checkbox-item input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--royal-green); }
+
+        /* نافذة معاينة الكتاب الملكية */
+        .book-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(8px);
+        }
+
+        .book-modal-content {
+            background: white;
+            width: 95%;
+            max-width: 1200px;
+            height: 90vh;
+            border-radius: 20px;
+            display: flex;
+            overflow: hidden;
+            animation: slideUp 0.4s ease-out;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        }
+
+        .modal-info-side {
+            flex: 1;
+            max-width: 350px;
+            padding: 30px;
+            overflow-y: auto;
+            border-left: 2px solid #eee;
+            text-align: right;
+            background: #fafbfc;
+        }
+
+        /* حاوية المعاينة الملكية */
+.modal-preview-side {
+    perspective: 1000px;
+    background: #555; /* خلفية داكنة لإبراز الصفحات */
+}
+
+
+        /* صفحات المعاينة الكاملة (تطابق محرك التحرير) */
+        .full-page {
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden; /* يمنع خروج النص */
+    padding: 60px !important;
+    position: relative;
+}
+        .full-page img, .full-page video { max-width: 100%; height: auto; border-radius: 8px; }
+
+        /* صفحات مصغرة (للتوافق مع الكود القديم إذا احتيج لها) */
+        .mini-page {
+            width: 200px;
+            height: 280px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-radius: 5px;
+            padding: 15px;
+            font-size: 9px;
+            line-height: 1.5;
+            overflow: hidden;
+            color: #333;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .highlights-container {
+            background: #fff8e1;
+            border-right: 4px solid var(--royal-gold);
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 150px;
+            overflow-y: auto;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .quote {
+            font-style: italic;
+            font-size: 13pt;
+            color: #5d4037;
+            margin-bottom: 8px;
+        }
+
+        /* أزرار الإجراءات داخل النافذة */
+        .modal-actions-list button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 12px;
+            text-align: right;
+            padding: 15px;
+            background: #fcfcfc;
+            color: #333;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-family: 'Amiri', serif;
+            font-size: 14pt;
+            cursor: pointer;
+        }
+
+        .modal-actions-list button:hover {
+            background: var(--royal-green);
+            color: white;
+            transform: translateX(-5px);
+            border-color: var(--royal-green);
+            box-shadow: 0 4px 10px rgba(107, 142, 35, 0.2);
+        }
+
+        .modal-actions-list button.btn-danger:hover {
+            background: #d32f2f;
+            border-color: #d32f2f;
+            box-shadow: 0 4px 10px rgba(211, 47, 47, 0.2);
+        }
+
+        .dropdown-menu {
+            background: #fff;
+            border: 1px solid #e1e4e8;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+
+        /* الزر العائم */
+        .royal-fab {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 56px;
+            height: 56px;
+            background-color: var(--royal-gold);
+            color: white;
+            border-radius: 50% 0 0 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            z-index: 9000;
+            transition: all 0.3s ease;
+        }
+
+        .royal-fab:hover {
+            width: 65px;
+            background-color: var(--royal-green);
+        }
+
+        /* النافذة المنبثقة للزر العائم */
+        .fab-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .fab-modal-content {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 15px;
+            padding: 20px;
+            border-top: 5px solid var(--royal-gold);
+            text-align: right;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .fab-option {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .fab-option:hover {
+            background: #f9f9f9;
+            color: var(--royal-gold);
+        }
+
+        .fab-option:last-child { border-bottom: none; }
+
+        .close-fab-modal {
+            float: left;
+            cursor: pointer;
+            font-size: 20px;
+            color: #999;
+        }
+        .page-wrapper {
+    margin-bottom: 30px;
+    transform: scale(0.6); /* تصغير الصفحة لتناسب العرض دون تغيير الخط */
+    transform-origin: top center;
+    width: 794px; /* عرض A4 الثابت */
+    height: 1123px; /* طول A4 الثابت */
+    margin-top: -150px; /* لتقليل الفراغات الناتجة عن الـ scale */
+}
+
+    </style>
+</head>
+<body>
+
+    <header style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; border-radius: 12px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <h2 style="font-family: 'Aref Ruqaa'; color: var(--royal-green);">صانع الكتب</h2>
+        </div>
+        <div id="authStatusArea" style="display: flex; align-items: center; gap: 20px;">
+            <span id="userDisplayName" style="font-weight: bold; color: #555;">جاري التحميل...</span>
+            <button id="authActionBtn" class="btn-primary" style="padding: 8px 15px; font-size: 11pt; border-radius: 20px; cursor: pointer; border: none; background: var(--royal-gold); color: white; transition: 0.3s;"></button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="header">
+            <h1>موقع صانع الكتب</h1>
+            <p>موقع لتسهيل صناعة وإنشاء الكتب الإلكترونية، بتنسيقات احترافية للنصوص، وأكبر إمكانية تخصيص للكتاب، مع إمكانية إضافة صور، وصوتيات، وفيديوهات إلى الكتاب، وإمكانية إنتاج/تصدير الكتاب بصيغة PDF تقليدية، وصيغة html ليكون الكتاب تفاعليًا وتعرض فيه الصوتيات والفيديوهات المضافة للكتاب.</p>
+        </div>
+
+        <div class="top-actions">
+            <button onclick="window.location.href='royal-features-interactive-fixed.html'" class="btn btn-info">تعلم عن الميزات وكيفية استخدامها</button>
+            <button onclick="createNewBook()" class="btn btn-primary" id="mainCreateBtn">أنشئ كتابك الآن</button>
+            <button onclick="openModal('categoryModal')" class="btn btn-secondary">أضف تصنيفًا جديدًا</button>
+        </div>
+
+        <div class="toolbar">
+            <div class="search-group">
+                <label>البحث عن كتاب</label>
+                <input type="text" id="searchInput" placeholder="اكتب للبحث..." oninput="renderBooks()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <div class="search-options">
+                    <select id="searchCriteria" onchange="renderBooks()">
+                        <option value="partial">جزء من النص / العنوان</option>
+                        <option value="exact_word">تطابق الكلمات</option>
+                        <option value="exact_letter">تطابق الحروف</option>
+                    </select>
+                    <select id="searchMatch" onchange="renderBooks()">
+                        <option value="all">كل الأحرف/الكلمات</option>
+                        <option value="some">بعض الأحرف/الكلمات</option>
+                    </select>
+                    <select id="searchOrder" onchange="renderBooks()">
+                        <option value="any">دون ترتيب</option>
+                        <option value="sequential">بالترتيب</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="sort-group">
+                <label>ترتيب الكتب</label>
+                <select id="sortSelect" onchange="renderBooks()">
+                    <option value="modified">حسب آخر تعديل</option>
+                    <option value="created">حسب آخر إنشاء</option>
+                    <option value="alpha">الحروف الأبجدية</option>
+                    <option value="category">حسب التصنيف</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="books-grid" id="booksContainer"></div>
+    </div>
+
+    <!-- نافذة إضافة تصنيف -->
+    <div class="modal-overlay" id="categoryModal">
+        <div class="modal-content">
+            <h2 class="modal-title">إضافة تصنيف جديد</h2>
+            <input type="text" id="catName" class="modal-input" placeholder="اسم التصنيف">
+            <input type="color" id="catColor" class="modal-input" value="#6B8E23" style="height: 50px; cursor:pointer;">
+            <input type="number" id="catOrder" class="modal-input" placeholder="رقم المنزلة (الترتيب)" value="1">
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="saveCategory()">حفظ</button>
+                <button class="btn btn-info" onclick="closeModal('categoryModal')" style="background:#d32f2f;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة الإجراءات (تغيير التصنيف الأحادي) -->
+    <div class="modal-overlay" id="actionModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="actionModalTitle">تعديل</h2>
+            <input type="text" id="actionModalInput" class="modal-input">
+            <select id="actionModalSelect" class="modal-input" style="display:none;"></select>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="executeAction()">تأكيد</button>
+                <button class="btn btn-info" onclick="closeModal('actionModal')" style="background:#d32f2f;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة التصنيفات المتعددة -->
+    <div class="modal-overlay" id="multiCategoryModal">
+        <div class="modal-content">
+            <h2 class="modal-title">إلحاق بتصنيفات</h2>
+            <div id="categoryCheckboxes" class="cat-checkbox-group"></div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="saveBookCategories()">حفظ</button>
+                <button class="btn" style="background:#d32f2f; color:white;" onclick="closeModal('multiCategoryModal')">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل العنوان والاقتباس -->
+    <div class="modal-overlay" id="inputModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="inputModalTitle">تعديل</h2>
+            <input type="text" id="inputModalField" class="modal-input">
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="saveInputData()">حفظ التعديل</button>
+                <button class="btn" style="background:#d32f2f; color:white;" onclick="closeModal('inputModal')">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تأكيد الحذف بكلمة المرور -->
+    <div class="modal-overlay" id="authConfirmModal">
+        <div class="modal-content">
+            <h2 class="modal-title" style="color: #d32f2f;">تأكيد الحذف</h2>
+            <p style="margin-bottom: 15px; font-size:12pt; color:#666;">يرجى إدخال كلمة المرور لحسابك (أو رمز التحقق) لتأكيد عملية الحذف نهائياً.</p>
+            <input type="password" id="authConfirmInput" class="modal-input" placeholder="كلمة المرور..." autocomplete="new-password">
+            <div class="modal-actions">
+                <button class="btn" style="background:#d32f2f; color:white;" onclick="executeDeleteBook()">تأكيد الحذف</button>
+                <button class="btn btn-info" onclick="closeModal('authConfirmModal')">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- النافذة الملكية للمعاينة الكاملة -->
+    <div id="bookModal" class="book-modal-overlay" onclick="closeModalOutside(event)">
+        <div class="book-modal-content" onclick="event.stopPropagation()">
+            
+            <div class="modal-info-side">
+                <h2 id="modalBookTitle" style="font-family: 'Aref Ruqaa'; color: var(--royal-green); font-size: 24pt; margin-bottom:10px;">عنوان الكتاب</h2>
+                
+                <div id="modalHighlights" class="highlights-container">
+                    <p class="quote" id="modalBookQuote">"اقتباس الكتاب يظهر هنا..."</p>
+                </div>
+                
+                <div class="modal-actions-list">
+                    <button onclick="openEditorFromModal()"><span>📝</span> متابعة التحرير</button>
+                    <button onclick="openInputModal('title')"><span>✏️</span> تعديل عنوان الكتاب</button>
+                    <button onclick="openInputModal('quote')"><span>💬</span> إضافة/تعديل الاقتباس</button>
+                    <button onclick="openMultiCategoryModal()"><span>🏷️</span> إلحاق بتصنيف (أو أكثر)</button>
+                    <button id="favBtn" onclick="toggleFavorite()"><span id="favBtnIcon">🤍</span> <span id="favBtnText">إضافة إلى المفضلة</span></button>
+                    <button onclick="showCardImageOptions()"><span>🖼️</span> تعديل صورة بطاقة الكتاب</button>
+                    
+                    <div id="cardImageOptions" class="dropdown-menu" style="display:none">
+                        <button onclick="generateCoverFromBook()" style="padding: 10px; font-size: 12pt; border: 1px solid #ccc; background: white; width: 100%; border-radius: 5px; margin-bottom: 5px; cursor:pointer;">توليد من بيانات الكتاب (آلي)</button>
+                        <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                            <button onclick="showImageInput('url')" style="padding: 10px; font-size: 12pt; border: 1px solid #ccc; background: white; width: 50%; border-radius: 5px; cursor:pointer;">رابط خارجي</button>
+                            <button onclick="showImageInput('file')" style="padding: 10px; font-size: 12pt; border: 1px solid #ccc; background: white; width: 50%; border-radius: 5px; cursor:pointer;">صورة من الجهاز</button>
+                        </div>
+                        
+                        <div id="imageInputArea" style="margin-top:10px; display:none; background: #f9f9f9; padding: 10px; border-radius: 5px;">
+                            <input type="text" id="externalUrl" placeholder="ضع رابط الصورة المباشر هنا..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; font-family:'Amiri'; font-size:12pt;">
+                            <input type="file" id="localFile" style="display:none" accept="image/*" onchange="handleFileSelect(event)">
+                            <button id="fileBtn" class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="document.getElementById('localFile').click()">اختر ملف من جهازك</button>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn btn-primary" style="width: 50%; padding: 8px;" onclick="applyCardImage()">تأكيد</button>
+                                <button class="btn" style="width: 50%; padding: 8px; background: #ccc; color: #333;" onclick="hideImageInput()">إلغاء</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-danger" style="background:#fff1f1; color:#d32f2f; border-color:#ffcdd2;" onclick="requestDeleteBook()"><span>🗑️</span> حذف الكتاب نهائياً</button>
+                </div>
+            </div>
+
+            <div id="modalPreview" class="modal-preview-side">
+            </div>
+
+        </div>
+    </div>
+
+    <!-- الزر العائم -->
+    <div class="royal-fab" onclick="toggleFabModal()">
+        <span style="font-size: 24px;">⚙️</span>
+    </div>
+
+    <div id="fabModal" class="fab-modal" onclick="if(event.target == this) toggleFabModal()">
+        <div class="fab-modal-content">
+            <span class="close-fab-modal" onclick="toggleFabModal()">✕</span>
+            <h3 style="margin-bottom: 20px; color: var(--royal-green); font-family: 'Aref Ruqaa';">خيارات الموقع</h3>
+            <div class="fab-option" onclick="startOfflineSetup()">
+                <span>📦</span> &nbsp; تحميل الموقع (نسخة دون انترنت)
+            </div>
+            <div class="fab-option" id="syncButtonId" onclick="confirmManualSync()">
+                <span>🔄</span> &nbsp; مزامنة البيانات مع هذه النسخة
+            </div>
+            <div class="fab-option">
+                <span>💡</span> &nbsp; اقتراحات للموقع
+            </div>
+            <div class="fab-option">
+                <span>⚠️</span> &nbsp; الإبلاغ عن المشكلات والأعطال
+            </div>
+            <div class="fab-option">
+                <span>🚀</span> &nbsp; ميزات قادمة للموقع
+            </div>
+            <div class="fab-option">
+                <span>👤</span> &nbsp; حسابات صاحب الموقع
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // 1. تهيئة البيانات
+    let books = JSON.parse(localStorage.getItem('royal_books_list') || '[]');
+    let categories = JSON.parse(localStorage.getItem('royal_categories_list') || '[]');
+    let currentActionBookId = null;
+    let currentActionType = null;
+    let customCardImage = null; // للاحتفاظ بالصورة المشفرة مؤقتاً
+    let currentInputType = null; // لنوافذ تعديل العنوان والاقتباس
+    let tempImageBase64 = null;  // لتخزين صور Base64 مؤقتاً
+
+    // حقن CSS من RoyalFeatures (plugins.js)
+    function injectPluginStyles() {
+        if (typeof RoyalFeatures === 'undefined') return;
+        let oldStyle = document.getElementById('dynamic-royal-styles');
+        if (oldStyle) oldStyle.remove();
+        let dynamicStyles = document.createElement('style');
+        dynamicStyles.id = 'dynamic-royal-styles';
+        for (let feature in RoyalFeatures) {
+            if (RoyalFeatures[feature].css) {
+                dynamicStyles.innerHTML += `/* ${feature} */\n` + RoyalFeatures[feature].css + "\n";
+            }
+        }
+        document.head.appendChild(dynamicStyles);
+    }
+
+    // دالة تطبيق ميزات plugins.js على النص
+    function applyRoyalStyles(text) {
+        if (!text) return "";
+        let res = text;
+        if (typeof RoyalFeatures !== 'undefined') {
+            for (let feature in RoyalFeatures) {
+                res = RoyalFeatures[feature].execute(res, []);
+            }
+        }
+        // تحويل أسطر جديدة إلى <br>
+        res = res.replace(/\n/g, '<br>');
+        return res;
+    }
+
+    if (!categories.find(c => c.id === 'default')) {
+        categories.push({ id: 'default', name: 'بلا تصنيف', color: '#888888', order: 999 });
+        saveData();
+    }
+
+    // 2. تحديث الواجهة والتشغيل الأولي
+    document.addEventListener('DOMContentLoaded', () => {
+        injectPluginStyles();
+        updateMainBtnText();
+        renderBooks();
+        updateSyncButtonVisibility();
+        syncPendingBooks();
+    });
+
+    async function syncPendingBooks() {
+        const pendingBook = localStorage.getItem('pending_sync_book');
+        if (pendingBook && navigator.onLine && typeof currentUser !== 'undefined' && currentUser.role === 'member') {
+            try {
+                await fetch(AUTH_CONFIG.SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "save_book", userId: currentUser.id, bookData: JSON.parse(pendingBook) })
+                });
+                localStorage.removeItem('pending_sync_book');
+                console.log("تمت مزامنة الكتاب المعلق بنجاح");
+            } catch(e) {}
+        }
+    }
+
+    // 1. تحديث دالة الحفظ لتشمل السحابة فوراً
+function saveData() {
+    localStorage.setItem('royal_books_list', JSON.stringify(books));
+    // استدعاء دالة المزامنة من auth.js إذا كان المستخدم مسجلاً
+    if (typeof syncWithCloud === "function") {
+        syncWithCloud(); 
+    }
+}
+
+    function updateMainBtnText() {
+        const btn = document.getElementById('mainCreateBtn');
+        if(btn) btn.innerText = books.length === 0 ? 'أنشئ كتابك الآن' : 'أنشئ كتابًا جديدًا';
+    }
+
+    // 3. إنشاء وفتح الكتب
+    function createNewBook() {
+        if (typeof canAddMoreBooks === 'function' && !canAddMoreBooks()) {
+            alert("تنبيه: لقد استنفدت الحد المسموح. يرجى تسجيل الدخول.");
+            window.location.href = 'login.html';
+            return;
+        }
+        localStorage.removeItem('bookData');
+        window.location.href = 'editor.html';
+    }
+
+    function openBook(bookId) {
+        const book = books.find(b => b.id === bookId);
+        if (book) {
+            localStorage.setItem('bookData', JSON.stringify(book));
+            window.location.href = 'editor.html';
+        }
+    }
+
+    // --- Category Logic ---
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function saveCategory() {
+        const name = document.getElementById('catName').value.trim();
+        const color = document.getElementById('catColor').value;
+        const order = parseInt(document.getElementById('catOrder').value) || 1;
+
+        if (name) {
+            categories.push({ id: 'cat_' + Date.now(), name, color, order });
+            categories.sort((a, b) => a.order - b.order);
+            saveData();
+            closeModal('categoryModal');
+            document.getElementById('catName').value = '';
+            renderBooks();
+        }
+    }
+
+    // --- التصنيفات المتعددة (من النسخة الجديدة) ---
+    function openMultiCategoryModal() {
+        const book = books.find(b => b.id === currentActionBookId);
+        if (!book) return;
+        const container = document.getElementById('categoryCheckboxes');
+        container.innerHTML = '';
+
+        // دعم كلا النظامين: categoryId (قديم) و categoryIds (جديد)
+        const bookCatIds = book.categoryIds || (book.categoryId ? [book.categoryId] : []);
+
+        categories.forEach(cat => {
+            const isChecked = bookCatIds.includes(cat.id) ? 'checked' : '';
+            container.innerHTML += `
+                <label class="cat-checkbox-item">
+                    <input type="checkbox" value="${cat.id}" ${isChecked}>
+                    <span style="color:${cat.color}; font-weight:bold;">${cat.name}</span>
+                </label>
+            `;
+        });
+        openModal('multiCategoryModal');
+    }
+
+    function saveBookCategories() {
+        const book = books.find(b => b.id === currentActionBookId);
+        if (!book) return;
+        const checkboxes = document.querySelectorAll('#categoryCheckboxes input[type="checkbox"]:checked');
+        const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+        book.categoryIds = selectedIds;
+        // للتوافق مع الكود القديم
+        if (selectedIds.length > 0) book.categoryId = selectedIds[0];
+
+        saveData();
+        renderBooks();
+        closeModal('multiCategoryModal');
+    }
+
+    // --- نافذة تعديل العنوان والاقتباس ---
+    function openInputModal(type) {
+        const book = books.find(b => b.id === currentActionBookId);
+        if (!book) return;
+
+        currentInputType = type;
+        const titleEl = document.getElementById('inputModalTitle');
+        const fieldEl = document.getElementById('inputModalField');
+
+        if (type === 'title') {
+            titleEl.innerText = 'تعديل عنوان الكتاب';
+            fieldEl.value = book.title || '';
+        } else if (type === 'quote') {
+            titleEl.innerText = 'إضافة اقتباس مميز';
+            fieldEl.value = book.quote || '';
+        }
+        openModal('inputModal');
+    }
+
+    function saveInputData() {
+        const book = books.find(b => b.id === currentActionBookId);
+        if (!book) return;
+        const val = document.getElementById('inputModalField').value.trim();
+
+        if (currentInputType === 'title') book.title = val;
+        if (currentInputType === 'quote') book.quote = val;
+
+        book.updatedAt = Date.now();
+        saveData();
+        renderBooks();
+
+        // تحديث النصوص داخل النافذة الملكية وهي مفتوحة
+        document.getElementById('modalBookTitle').innerHTML = applyRoyalStyles(book.title || 'كتاب بدون عنوان');
+        const quoteEl = document.getElementById('modalBookQuote');
+        if (quoteEl) quoteEl.innerHTML = book.quote ? applyRoyalStyles(`" ${book.quote} "`) : "لم يتم وضع اقتباس مميز لهذا الكتاب بعد.";
+
+        closeModal('inputModal');
+    }
+
+    // --- Render Books ---
+    function renderBooks() {
+        const container = document.getElementById('booksContainer');
+        container.innerHTML = '';
+
+        let filteredBooks = applySearch(books);
+        filteredBooks = applySort(filteredBooks);
+
+        if (filteredBooks.length === 0) {
+            container.innerHTML = '<div class="empty-state">لا توجد كتب مطابقة للعرض. ابدأ بالإبداع!</div>';
+            return;
+        }
+
+        filteredBooks.forEach(book => {
+            // دعم كلا النظامين: categoryIds (متعدد) و categoryId (مفرد)
+            let bookCats = [];
+            if (book.categoryIds && book.categoryIds.length > 0) {
+                bookCats = book.categoryIds.map(id => categories.find(c => c.id === id)).filter(Boolean);
+            } else {
+                const cat = categories.find(c => c.id === book.categoryId) || categories.find(c => c.id === 'default') || categories[0];
+                if (cat) bookCats = [cat];
+            }
+
+            const catsHtml = bookCats.map(c =>
+                `<span class="card-category-tag" style="background-color: ${c.color}">${c.name}</span>`
+            ).join('');
+
+            // صورة البطاقة منفصلة عن غلاف الكتاب
+            const cardUrl = book.cardImage || book.cover || book.coverImage || '';
+            const coverDisplay = cardUrl
+                ? `background-image: url('${cardUrl}')`
+                : `background-color: #eee; background-image: linear-gradient(45deg, #f3f3f3 25%, transparent 25%), linear-gradient(-45deg, #f3f3f3 25%, transparent 25%); background-size: 20px 20px;`;
+
+            // علامة المفضلة
+            const favHeart = book.isFavorite
+                ? `<span class="fav-heart" title="مضاف للمفضلة">❤️</span>`
+                : '';
+
+            const card = document.createElement('div');
+            card.className = 'book-card';
+            card.innerHTML = `
+                <div class="card-header" onclick="event.stopPropagation()">
+                    <div class="card-title" title="${book.title || 'بدون عنوان'}">${applyRoyalStyles(book.title || 'بدون عنوان')}</div>
+                    <div style="position:relative;">
+                        <button class="dots-btn" onclick="openBookPreview('${book.id}')" title="خيارات الكتاب">⋮</button>
+                    </div>
+                </div>
+                <div class="card-cover" style="${coverDisplay}" onclick="openBook('${book.id}')">
+                    ${!cardUrl ? '<span style="position:absolute; top:45%; width:100%; text-align:center; color:#999; font-weight:bold;">بدون غلاف</span>' : ''}
+                    ${favHeart}
+                    <div class="card-categories-container">${catsHtml}</div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function applySort(list) {
+        const sortType = document.getElementById('sortSelect').value;
+        return list.sort((a, b) => {
+            if (sortType === 'modified') return (b.updatedAt || 0) - (a.updatedAt || 0);
+            if (sortType === 'created') return (b.createdAt || 0) - (a.createdAt || 0);
+            if (sortType === 'alpha') return (a.title || "").localeCompare((b.title || ""), 'ar');
+            if (sortType === 'category') {
+                let catA = categories.find(c => c.id === a.categoryId)?.order || 999;
+                let catB = categories.find(c => c.id === b.categoryId)?.order || 999;
+                return catA - catB;
+            }
+        });
+    }
+
+    function applySearch(list) {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        if (!query) return list;
+
+        const criteria = document.getElementById('searchCriteria').value;
+        const match = document.getElementById('searchMatch').value;
+        const order = document.getElementById('searchOrder').value;
+
+        return list.filter(book => {
+            const targetText = ((book.title || "") + " " + (book.quote || "") + " " + (book.text || "")).toLowerCase();
+            if (criteria === 'partial') return targetText.includes(query);
+
+            const queryParts = query.split(/\s+/);
+            if (criteria === 'exact_word') {
+                if (match === 'all') return queryParts.every(part => targetText.includes(part));
+                else return queryParts.some(part => targetText.includes(part));
+            }
+            return targetText.includes(query);
+        });
+    }
+
+    // --- Book Context Actions (Modal Logic) ---
+    function triggerAction(bookId, action) {
+        currentActionBookId = bookId;
+        currentActionType = action;
+        const book = books.find(b => b.id === bookId);
+
+        const input = document.getElementById('actionModalInput');
+        const select = document.getElementById('actionModalSelect');
+        const title = document.getElementById('actionModalTitle');
+
+        input.style.display = 'block';
+        select.style.display = 'none';
+        input.value = '';
+
+        if (action === 'category') {
+            title.innerText = 'إلحاق بتصنيف جديد';
+            input.style.display = 'none';
+            select.style.display = 'block';
+            select.innerHTML = categories.map(c => `<option value="${c.id}" ${book.categoryId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+        }
+        openModal('actionModal');
+    }
+
+    function executeAction() {
+        const book = books.find(b => b.id === currentActionBookId);
+        if (!book) return;
+
+        if (currentActionType === 'category') {
+            book.categoryId = document.getElementById('actionModalSelect').value;
+        }
+
+        book.updatedAt = Date.now();
+        saveData();
+        renderBooks();
+        closeModal('actionModal');
+        document.getElementById('bookModal').style.display = 'none';
+    }
+
+    // --- حذف الكتاب مع تأكيد بكلمة المرور ---
+    function requestDeleteBook() {
+        openModal('authConfirmModal');
+    }
+
+    function executeDeleteBook() {
+        const pwd = document.getElementById('authConfirmInput').value;
+        if (!pwd) { alert("يجب إدخال كلمة المرور!"); return; }
+
+        books = books.filter(b => b.id !== currentActionBookId);
+        saveData();
+        renderBooks();
+        closeModal('authConfirmModal');
+        document.getElementById('bookModal').style.display = 'none';
+        document.getElementById('authConfirmInput').value = '';
+    }
+
+    // الحذف المباشر (للاستخدام الداخلي القديم)
+    function deleteBook(id) {
+        if (confirm('هل أنت متأكد من حذف هذا الكتاب نهائياً من المكتبة؟')) {
+            books = books.filter(b => b.id !== id);
+            saveData();
+            renderBooks();
+            document.getElementById('bookModal').style.display = 'none';
+        }
+    }
+
+    // --- FAB & PWA Functions ---
+    function toggleFabModal() {
+        const modal = document.getElementById('fabModal');
+        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function startOfflineSetup() {
+        toggleFabModal();
+        window.location.href = 'offline-setup.html';
+    }
+
+    function confirmManualSync() {
+        if (confirm("هل أنت متأكد من المزامنة؟ سيتم نقل التغيرات للسحابة والعكس.")) {
+            if(typeof startSyncProcess === 'function') startSyncProcess();
+        }
+        toggleFabModal();
+    }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('تم تفعيل محرك الأوف لاين بنجاح ✅', reg))
+            .catch(err => console.error('فشل تفعيل المحرك ❌', err));
+        });
+    }
+
+    function updateSyncButtonVisibility() {
+        const syncBtn = document.getElementById('syncButtonId');
+        if (!syncBtn) return;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        syncBtn.style.display = isStandalone ? 'flex' : 'none';
+    }
+
+// 2. محرك المعاينة المطور (المطابق للمحرر)
+function openBookPreview(bookId) {
+    currentActionBookId = bookId;
+    const book = books.find(b => b.id === bookId);
+    if(!book) return;
+
+    document.getElementById('modalBookTitle').innerText = book.title;
+    document.getElementById('modalBookQuote').innerText = book.quote ? `"${book.quote}"` : "لا يوجد اقتباس.";
+    updateFavBtn(book);
+    const previewCont = document.getElementById('modalPreview');
+    previewCont.innerHTML = ""; 
+    previewCont.style.overflowY = "auto";
+
+    // جلب الإعدادات الأصلية من الكتاب
+    const settings = book.settings || {};
+    const pageStyleClass = book.pageStyle || 'style-modern'; // النمط المختار في المحرر
+
+    const renderPage = (contentHtml) => {
+        if(!contentHtml) return
+        const wrapper = document.createElement('div');
+        wrapper.className = 'page-wrapper'; // حاوية للتحكم في الحجم
+            const page = document.createElement('div');
+            page.className = `full-page ${pageStyleClass}`;
+            page.style.backgroundColor = settings.pageColor || '#fff';
+            page.style.color = settings.textColor || '#000';
+            page.innerHTML = applyRoyalStyles(contentHtml); // تطبيق التنسيقات الملكية
+            wrapper.appendChild(page);
+            previewCont.appendChild(wrapper);
+    };
+
+    // عرض الغلاف، الفهرس، ثم الصفحات
+    if (book.coverHtml) renderPage(book.coverHtml);
+    if (book.tocHtml) renderPage(book.tocHtml);
+    (book.contentPages || []).forEach(p => renderPage(p));
+
+    document.getElementById('bookModal').style.display = 'flex';
+}
+
+
+    function closeModalOutside(event) {
+        if(event.target.id === 'bookModal') {
+            document.getElementById('bookModal').style.display = 'none';
+            hideImageInput();
+        }
+    }
+
+    // ربط أزرار النافذة الملكية بالدوال
+    function openEditorFromModal() {
+        if(currentActionBookId) openBook(currentActionBookId);
+    }
+
+    function openCategoryFromModal() {
+        if(currentActionBookId) triggerAction(currentActionBookId, 'category');
+    }
+
+    function confirmDeleteBookFromModal() {
+        if(currentActionBookId) requestDeleteBook();
+    }
+
+    // --- منطق المفضلة ---
+    function updateFavBtn(book) {
+        const icon = document.getElementById('favBtnIcon');
+        const text = document.getElementById('favBtnText');
+        if (!icon || !text) return;
+        if (book && book.isFavorite) {
+            icon.textContent = '❤️';
+            text.textContent = 'إزالة من المفضلة';
+        } else {
+            icon.textContent = '🤍';
+            text.textContent = 'إضافة إلى المفضلة';
+        }
+    }
+
+    function toggleFavorite() {
+        const book = books.find(b => b.id === currentActionBookId);
+        if (!book) return;
+
+        if (book.isFavorite) {
+            // إزالة من المفضلة
+            if (confirm('هل تريد إزالة هذا الكتاب من المفضلة؟')) {
+                book.isFavorite = false;
+                book.updatedAt = Date.now();
+                saveData();
+                renderBooks();
+                updateFavBtn(book);
+                // مزامنة مع السحابة إن أمكن
+                syncFavoriteToCloud(book);
+            }
+        } else {
+            // إضافة إلى المفضلة
+            if (confirm('هل تريد إضافة هذا الكتاب إلى المفضلة؟')) {
+                book.isFavorite = true;
+                book.updatedAt = Date.now();
+                saveData();
+                renderBooks();
+                updateFavBtn(book);
+                // مزامنة مع السحابة إن أمكن
+                syncFavoriteToCloud(book);
+            }
+        }
+    }
+
+    async function syncFavoriteToCloud(book) {
+        if (navigator.onLine && typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'member') {
+            try {
+                await fetch(AUTH_CONFIG.SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "save_book", userId: currentUser.id, bookData: book })
+                });
+            } catch(e) {
+                // لا بأس، البيانات محفوظة في localStorage وستُزامَن لاحقاً
+                localStorage.setItem('pending_sync_book', JSON.stringify(book));
+            }
+        } else if (!navigator.onLine) {
+            // حفظ للمزامنة لاحقاً
+            localStorage.setItem('pending_sync_book', JSON.stringify(book));
+        }
+    }
+
+    // --- منطق تعديل الغلاف من داخل النافذة ---
+    function showCardImageOptions() {
+        const menu = document.getElementById('cardImageOptions');
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function showImageInput(type) {
+        document.getElementById('imageInputArea').style.display = 'block';
+        if(type === 'url') {
+            document.getElementById('externalUrl').style.display = 'block';
+            document.getElementById('fileBtn').style.display = 'none';
+        } else {
+            document.getElementById('externalUrl').style.display = 'none';
+            document.getElementById('fileBtn').style.display = 'block';
+        }
+    }
+
+    function hideImageInput() {
+        const imageInputArea = document.getElementById('imageInputArea');
+        const cardImageOptions = document.getElementById('cardImageOptions');
+        const externalUrl = document.getElementById('externalUrl');
+        const fileBtn = document.getElementById('fileBtn');
+
+        if (imageInputArea) imageInputArea.style.display = 'none';
+        if (cardImageOptions) cardImageOptions.style.display = 'none';
+        if (externalUrl) externalUrl.value = '';
+        if (fileBtn) fileBtn.innerText = 'اختر ملف من جهازك';
+        customCardImage = null;
+        tempImageBase64 = null;
+    }
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                customCardImage = e.target.result;
+                tempImageBase64 = e.target.result;
+                document.getElementById('fileBtn').innerText = "تم اختيار الصورة ✔️";
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    async function applyCardImage() {
+        const book = books.find(b => b.id === currentActionBookId);
+        if(!book) return;
+
+        const urlInput = document.getElementById('externalUrl');
+
+        if (urlInput.style.display !== 'none' && urlInput.value.trim() !== '') {
+            // محاولة تحويل الرابط الخارجي إلى Base64
+            try {
+                const response = await fetch(urlInput.value.trim());
+                const blob = await response.blob();
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    // حفظ صورة البطاقة في حقل منفصل لا يؤثر على غلاف الكتاب
+                    book.cardImage = reader.result;
+                    finalizeImageUpdate();
+                };
+                reader.readAsDataURL(blob);
+            } catch (e) {
+                console.warn("فشل التحويل بسبب CORS، سيتم حفظ الرابط كنص.");
+                book.cardImage = urlInput.value.trim();
+                finalizeImageUpdate();
+            }
+        } else if (customCardImage) {
+            // حفظ صورة البطاقة في حقل منفصل لا يؤثر على غلاف الكتاب
+            book.cardImage = customCardImage;
+            finalizeImageUpdate();
+        } else {
+            alert("الرجاء اختيار صورة أو إدخال رابط أولاً.");
+        }
+    }
+
+    // 3. دالة توليد صورة البطاقة المطابقة للغلاف
+function generateCoverFromBook() {
     const book = books.find(b => b.id === activeBookId);
     const canvas = document.createElement('canvas');
     canvas.width = 400; canvas.height = 600;
