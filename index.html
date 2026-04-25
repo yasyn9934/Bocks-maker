@@ -297,24 +297,22 @@
             background: #fafbfc;
         }
 
-        .modal-preview-side {
-            flex: 2;
-            background: #e0e4e8;
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-y: auto;
-            gap: 30px;
-        }
+        /* حاوية المعاينة الملكية */
+.modal-preview-side {
+    perspective: 1000px;
+    background: #555; /* خلفية داكنة لإبراز الصفحات */
+}
+
 
         /* صفحات المعاينة الكاملة (تطابق محرك التحرير) */
         .full-page {
-            width: 100%; max-width: 700px; min-height: 990px;
-            background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            padding: 40px; border-radius: 4px; font-size: 16pt; line-height: 1.8;
-            color: #333; overflow-wrap: break-word; text-align: justify;
-        }
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden; /* يمنع خروج النص */
+    padding: 60px !important;
+    position: relative;
+}
         .full-page img, .full-page video { max-width: 100%; height: auto; border-radius: 8px; }
 
         /* صفحات مصغرة (للتوافق مع الكود القديم إذا احتيج لها) */
@@ -469,6 +467,15 @@
             font-size: 20px;
             color: #999;
         }
+        .page-wrapper {
+    margin-bottom: 30px;
+    transform: scale(0.6); /* تصغير الصفحة لتناسب العرض دون تغيير الخط */
+    transform-origin: top center;
+    width: 794px; /* عرض A4 الثابت */
+    height: 1123px; /* طول A4 الثابت */
+    margin-top: -150px; /* لتقليل الفراغات الناتجة عن الـ scale */
+}
+
     </style>
 </head>
 <body>
@@ -738,11 +745,14 @@
         }
     }
 
-    function saveData() {
-        localStorage.setItem('royal_books_list', JSON.stringify(books));
-        localStorage.setItem('royal_categories_list', JSON.stringify(categories));
-        updateMainBtnText();
+    // 1. تحديث دالة الحفظ لتشمل السحابة فوراً
+function saveData() {
+    localStorage.setItem('royal_books_list', JSON.stringify(books));
+    // استدعاء دالة المزامنة من auth.js إذا كان المستخدم مسجلاً
+    if (typeof syncWithCloud === "function") {
+        syncWithCloud(); 
     }
+}
 
     function updateMainBtnText() {
         const btn = document.getElementById('mainCreateBtn');
@@ -1052,81 +1062,46 @@
         syncBtn.style.display = isStandalone ? 'flex' : 'none';
     }
 
-    // --- النافذة الملكية (معاينة الكتاب الكاملة) ---
-    function openBookPreview(bookId) {
-        const book = books.find(b => b.id === bookId);
+// 2. محرك المعاينة المطور (المطابق للمحرر)
+function openBookPreview(bookId) {
+    activeBookId = bookId;
+    const book = books.find(b => b.id === bookId);
+    if(!book) return;
 
-        if (!book) {
-            alert("عذراً، لم يتم العثور على بيانات هذا الكتاب.");
-            return;
-        }
+    document.getElementById('modalBookTitle').innerText = book.title;
+    document.getElementById('modalBookQuote').innerText = book.quote ? `"${book.quote}"` : "لا يوجد اقتباس.";
 
-        currentActionBookId = bookId;
-        // تطبيق التنسيقات على عنوان الكتاب في النافذة
-        const titleEl = document.getElementById('modalBookTitle');
-        titleEl.innerHTML = applyRoyalStyles(book.title || 'كتاب بدون عنوان');
+    const previewCont = document.getElementById('modalPreview');
+    previewCont.innerHTML = ""; 
+    
+    // جلب الإعدادات الأصلية من الكتاب
+    const settings = book.settings || {};
+    const pageStyleClass = book.pageStyle || 'style-modern'; // النمط المختار في المحرر
 
-        // عرض الاقتباس
-        const highCont = document.getElementById('modalHighlights');
-        const quoteEl = document.getElementById('modalBookQuote');
-        if (quoteEl) {
-            quoteEl.innerHTML = book.quote
-                ? applyRoyalStyles(`" ${book.quote} "`)
-                : "لم يتم وضع اقتباس مميز لهذا الكتاب بعد.";
-        } else {
-            highCont.innerHTML = book.quote
-                ? `<p class="quote">${applyRoyalStyles('" ' + book.quote + ' "')}</p>`
-                : "<p style='color:#999; font-size:11pt;'>لم يتم وضع اقتباس مميز لهذا الكتاب بعد.</p>";
-        }
+    const renderPage = (contentHtml) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'page-wrapper'; // حاوية للتحكم في الحجم
+        
+        const page = document.createElement('div');
+        page.className = `full-page ${pageStyleClass}`;
+        page.style.backgroundColor = settings.pageColor || '#fff';
+        page.style.color = settings.textColor || '#000';
+        
+        // استخدام المحرك الملكي لمعالجة النصوص (Plugins & Features)
+        page.innerHTML = contentHtml;
+        
+        wrapper.appendChild(page);
+        previewCont.appendChild(wrapper);
+    };
 
-        // إعادة تصفير قائمة الصور
-        hideImageInput();
+    // عرض الغلاف، الفهرس، ثم الصفحات
+    if (book.coverHtml) renderPage(book.coverHtml);
+    if (book.tocHtml) renderPage(book.tocHtml);
+    (book.contentPages || []).forEach(p => renderPage(p));
 
-        // ضبط حالة زر المفضلة
-        updateFavBtn(book);
+    document.getElementById('bookModal').style.display = 'flex';
+}
 
-        // محرك توليد المعاينة
-        const previewCont = document.getElementById('modalPreview');
-        previewCont.innerHTML = "";
-
-        const settings = book.settings || { pageColor: '#fff', textColor: '#000', fontFamily: 'Amiri', fontSize: '18pt' };
-
-        // دالة مساعدة لإنشاء صفحة معاينة بالتنسيق الصحيح مع تطبيق plugins
-        const createPage = (htmlContent, isCover = false) => {
-            const page = document.createElement('div');
-            page.className = 'full-page';
-            page.style.backgroundColor = settings.pageColor;
-            page.style.color = settings.textColor;
-            page.style.fontFamily = `'${settings.fontFamily}', serif`;
-            page.style.fontSize = settings.fontSize;
-            if (isCover) {
-                page.style.display = 'flex';
-                page.style.flexDirection = 'column';
-                page.style.justifyContent = 'center';
-            }
-            // تطبيق التنسيقات عبر applyRoyalStyles على محتوى النص النقي
-            // المحتوى المُخزَّن (coverHtml, tocHtml, contentPages) هو HTML جاهز من المحرر
-            // نضعه مباشرة لأنه مُنسَّق مسبقاً
-            page.innerHTML = htmlContent;
-            previewCont.appendChild(page);
-        };
-
-        if (book.coverHtml) createPage(book.coverHtml, true);
-        if (book.tocHtml) createPage(book.tocHtml);
-
-        if (book.contentPages && book.contentPages.length > 0) {
-            book.contentPages.forEach(pageHtml => createPage(pageHtml));
-        } else if (book.text) {
-            // دعم احتياطي للمحتوى النصي القديم — نطبق عليه التنسيقات
-            let rawText = book.text;
-            let contentChunks = rawText.match(/.{1,1500}/gs) || [rawText];
-            contentChunks.forEach(chunk => createPage(`<div>${applyRoyalStyles(chunk)}</div>`));
-        } else {
-            createPage('<div style="text-align:center; color:#999; margin-top:50%;">محتوى فارغ.. ابدأ بكتابة الفصل الأول.</div>');
-        }
-
-        document.getElementById('bookModal').style.display = 'flex';
-    }
 
     function closeModalOutside(event) {
         if(event.target.id === 'bookModal') {
@@ -1284,100 +1259,61 @@
         }
     }
 
-    function generateCoverFromBook() {
-        const book = books.find(b => b.id === currentActionBookId);
-        if (!book) return;
+    // 3. دالة توليد صورة البطاقة المطابقة للغلاف
+function setCoverFromBookData() {
+    const book = books.find(b => b.id === activeBookId);
+    const canvas = document.createElement('canvas');
+    canvas.width = 400; canvas.height = 600;
+    const ctx = canvas.getContext('2d');
 
-        // إنشاء iframe مخفي لتصيير غلاف الكتاب كما في المحرر
-        // نعتمد على coverHtml إذا كان موجوداً، وإلا نرسمه برمجياً مطابقاً لمظهر الغلاف في المحرر
-        const settings = book.settings || {};
-        const pageColor = settings.pageColor || '#FFFDD0';
-        const textColor = settings.textColor || '#333';
-        const fontFamily = settings.fontFamily || 'Amiri';
-        const fontSize = settings.fontSize || '18pt';
+    // محاكاة نمط الغلاف (Style)
+    const bgColor = book.settings?.pageColor || '#fdfaf0';
+    const textColor = book.settings?.textColor || '#2c3e50';
 
-        const canvas = document.createElement('canvas');
-        // نسبة A4 تقريباً (250mm x 353mm)
-        canvas.width = 500;
-        canvas.height = 706;
-        const ctx = canvas.getContext('2d');
+    // رسم الخلفية
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // خلفية الصفحة
-        ctx.fillStyle = pageColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // إذا كان هناك صورة غلاف في الكتاب نضعها في الخلفية
-        const coverSrc = book.cover || book.coverImage;
-
-        const drawTextOnCanvas = () => {
-            // حدود ذهبية (مثل style-islamic)
-            ctx.strokeStyle = '#b8860b';
-            ctx.lineWidth = 4;
-            ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([]);
-            // مثلثات الزوايا
-            ctx.beginPath();
-            ctx.moveTo(15, 50); ctx.lineTo(50, 15);
-            ctx.moveTo(canvas.width-15, 50); ctx.lineTo(canvas.width-50, 15);
-            ctx.moveTo(15, canvas.height-50); ctx.lineTo(50, canvas.height-15);
-            ctx.moveTo(canvas.width-15, canvas.height-50); ctx.lineTo(canvas.width-50, canvas.height-15);
-            ctx.stroke();
-
-            // العنوان (55pt محوّل تناسبياً)
-            ctx.fillStyle = textColor;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            const title = book.title || 'بدون عنوان';
-            // رسم العنوان بخط كبير
-            ctx.font = `bold 52px serif`;
-            const words = title.split(' ');
-            let lines = []; let line = '';
-            words.forEach(word => {
-                let test = line + word + ' ';
-                if (ctx.measureText(test).width > canvas.width - 80) { if (line) lines.push(line.trim()); line = word + ' '; }
-                else { line = test; }
-            });
-            if (line.trim()) lines.push(line.trim());
-
-            let startY = canvas.height / 2 - (lines.length - 1) * 35;
-            lines.forEach((l, i) => {
-                ctx.fillText(l, canvas.width / 2, startY + i * 70);
-            });
-
-            // المؤلف (30pt)
-            if (book.author) {
-                ctx.font = `30px serif`;
-                ctx.fillStyle = '#4a3f35';
-                ctx.fillText(book.author, canvas.width / 2, startY + lines.length * 70 + 30);
-            }
-
-            // التاريخ
-            if (book.date) {
-                ctx.font = `20px serif`;
-                ctx.fillStyle = '#777';
-                ctx.fillText(book.date, canvas.width / 2, canvas.height - 60);
-            }
-
-            // حفظ الصورة في cardImage فقط — لا نمس cover أو coverImage
-            book.cardImage = canvas.toDataURL('image/jpeg', 0.92);
-            finalizeImageUpdate();
+    // إذا كان هناك صورة غلاف أصلية، نرسمها كخلفية مصغرة
+    if (book.cCoverImg) {
+        const img = new Image();
+        img.onload = function() {
+            ctx.globalAlpha = 0.3; // جعلها شفافة قليلاً خلف النصوص
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = 1.0;
+            drawText();
         };
-
-        if (coverSrc) {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                drawTextOnCanvas();
-            };
-            img.onerror = () => { drawTextOnCanvas(); };
-            img.src = coverSrc;
-        } else {
-            drawTextOnCanvas();
-        }
+        img.src = book.cCoverImg;
+    } else {
+        drawText();
     }
+    function drawText() {
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'center';
+        
+        // العنوان (بخط عريض)
+        ctx.font = 'bold 32px Arial';
+        ctx.fillText(book.title || 'بدون عنوان', canvas.width/2, 200);
+        
+        // المؤلف
+        ctx.font = '22px Arial';
+        ctx.fillText(book.author || '', canvas.width/2, 260);
+        
+        // التاريخ في الأسفل
+        ctx.font = '16px Arial';
+        ctx.fillText(book.date || '', canvas.width/2, 550);
+
+        // إطار ملكي ذهبي
+        ctx.strokeStyle = '#b8860b';
+        ctx.lineWidth = 8;
+        ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
+
+        book.coverImage = canvas.toDataURL('image/jpeg', 0.8);
+        book.autoCardImage = true; // علامة ليعرف النظام أنها تلقائية
+        finalizeImageUpdate();
+    }
+}
+
 
     function finalizeImageUpdate() {
         saveData();
