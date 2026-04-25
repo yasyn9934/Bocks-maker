@@ -1,6 +1,6 @@
 // sw.js (الإصدار v4 المصحح والمستقر)
 
-const CACHE_NAME = 'royal-book-v4'; 
+const CACHE_NAME = 'royal-book-v3'; 
 
 const urlsToCache = [
   './',
