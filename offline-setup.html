@@ -93,6 +93,7 @@
     </div>
 
 <script>
+    let indexPage = "./"
     async function installOffline() {
         const btn = document.getElementById('startBtn');
         const pCont = document.getElementById('progressCont');
@@ -144,7 +145,7 @@
                         clearInterval(interval);
                         status.style.color = "var(--royal-green)";
                         status.innerText = "✅ اكتمل التجهيز! يمكنك الآن استخدام الموقع دون إنترنت.";
-                        setTimeout(() => window.location.href = 'index.html', 1500);
+                        setTimeout(() => window.location.href = indexPage, 1500);
                     }
                 }, 150); // سرعة تحديث 150ms تجعل الحركة ناعمة جداً
                 
