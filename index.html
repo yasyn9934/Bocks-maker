@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
     <script src="auth.js"></script>
+    <script src="plugins.js"></script>
     <title>موقع صانع الكتب - الرئيسية</title>
     <style>
         @font-face { font-family: 'Amiri'; src: url('fonts/Amiri-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
@@ -216,6 +217,17 @@
             font-size: 11pt;
             font-family: 'Amiri', serif;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        /* علامة المفضلة على البطاقة */
+        .fav-heart {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 22px;
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+            pointer-events: none;
+            z-index: 3;
         }
 
         /* Multi-select categories container (من النسخة الجديدة) */
@@ -486,7 +498,7 @@
         <div class="toolbar">
             <div class="search-group">
                 <label>البحث عن كتاب</label>
-                <input type="text" id="searchInput" placeholder="اكتب للبحث..." oninput="renderBooks()">
+                <input type="text" id="searchInput" placeholder="اكتب للبحث..." oninput="renderBooks()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 <div class="search-options">
                     <select id="searchCriteria" onchange="renderBooks()">
                         <option value="partial">جزء من النص / العنوان</option>
@@ -574,7 +586,7 @@
         <div class="modal-content">
             <h2 class="modal-title" style="color: #d32f2f;">تأكيد الحذف</h2>
             <p style="margin-bottom: 15px; font-size:12pt; color:#666;">يرجى إدخال كلمة المرور لحسابك (أو رمز التحقق) لتأكيد عملية الحذف نهائياً.</p>
-            <input type="password" id="authConfirmInput" class="modal-input" placeholder="كلمة المرور...">
+            <input type="password" id="authConfirmInput" class="modal-input" placeholder="كلمة المرور..." autocomplete="new-password">
             <div class="modal-actions">
                 <button class="btn" style="background:#d32f2f; color:white;" onclick="executeDeleteBook()">تأكيد الحذف</button>
                 <button class="btn btn-info" onclick="closeModal('authConfirmModal')">إلغاء</button>
@@ -598,7 +610,8 @@
                     <button onclick="openInputModal('title')"><span>✏️</span> تعديل عنوان الكتاب</button>
                     <button onclick="openInputModal('quote')"><span>💬</span> إضافة/تعديل الاقتباس</button>
                     <button onclick="openMultiCategoryModal()"><span>🏷️</span> إلحاق بتصنيف (أو أكثر)</button>
-                    <button onclick="showCardImageOptions()"><span>🖼️</span> تعديل صورة الغلاف</button>
+                    <button id="favBtn" onclick="toggleFavorite()"><span id="favBtnIcon">🤍</span> <span id="favBtnText">إضافة إلى المفضلة</span></button>
+                    <button onclick="showCardImageOptions()"><span>🖼️</span> تعديل صورة بطاقة الكتاب</button>
                     
                     <div id="cardImageOptions" class="dropdown-menu" style="display:none">
                         <button onclick="generateCoverFromBook()" style="padding: 10px; font-size: 12pt; border: 1px solid #ccc; background: white; width: 100%; border-radius: 5px; margin-bottom: 5px; cursor:pointer;">توليد من بيانات الكتاب (آلي)</button>
@@ -668,6 +681,35 @@
     let currentInputType = null; // لنوافذ تعديل العنوان والاقتباس
     let tempImageBase64 = null;  // لتخزين صور Base64 مؤقتاً
 
+    // حقن CSS من RoyalFeatures (plugins.js)
+    function injectPluginStyles() {
+        if (typeof RoyalFeatures === 'undefined') return;
+        let oldStyle = document.getElementById('dynamic-royal-styles');
+        if (oldStyle) oldStyle.remove();
+        let dynamicStyles = document.createElement('style');
+        dynamicStyles.id = 'dynamic-royal-styles';
+        for (let feature in RoyalFeatures) {
+            if (RoyalFeatures[feature].css) {
+                dynamicStyles.innerHTML += `/* ${feature} */\n` + RoyalFeatures[feature].css + "\n";
+            }
+        }
+        document.head.appendChild(dynamicStyles);
+    }
+
+    // دالة تطبيق ميزات plugins.js على النص
+    function applyRoyalStyles(text) {
+        if (!text) return "";
+        let res = text;
+        if (typeof RoyalFeatures !== 'undefined') {
+            for (let feature in RoyalFeatures) {
+                res = RoyalFeatures[feature].execute(res, []);
+            }
+        }
+        // تحويل أسطر جديدة إلى <br>
+        res = res.replace(/\n/g, '<br>');
+        return res;
+    }
+
     if (!categories.find(c => c.id === 'default')) {
         categories.push({ id: 'default', name: 'بلا تصنيف', color: '#888888', order: 999 });
         saveData();
@@ -675,6 +717,7 @@
 
     // 2. تحديث الواجهة والتشغيل الأولي
     document.addEventListener('DOMContentLoaded', () => {
+        injectPluginStyles();
         updateMainBtnText();
         renderBooks();
         updateSyncButtonVisibility();
@@ -812,9 +855,9 @@
         renderBooks();
 
         // تحديث النصوص داخل النافذة الملكية وهي مفتوحة
-        document.getElementById('modalBookTitle').innerText = book.title || 'كتاب بدون عنوان';
+        document.getElementById('modalBookTitle').innerHTML = applyRoyalStyles(book.title || 'كتاب بدون عنوان');
         const quoteEl = document.getElementById('modalBookQuote');
-        if (quoteEl) quoteEl.innerText = book.quote ? `" ${book.quote} "` : "لم يتم وضع اقتباس مميز لهذا الكتاب بعد.";
+        if (quoteEl) quoteEl.innerHTML = book.quote ? applyRoyalStyles(`" ${book.quote} "`) : "لم يتم وضع اقتباس مميز لهذا الكتاب بعد.";
 
         closeModal('inputModal');
     }
@@ -846,22 +889,29 @@
                 `<span class="card-category-tag" style="background-color: ${c.color}">${c.name}</span>`
             ).join('');
 
-            const coverUrl = book.cover || book.coverImage || '';
-            const coverDisplay = coverUrl
-                ? `background-image: url('${coverUrl}')`
+            // صورة البطاقة منفصلة عن غلاف الكتاب
+            const cardUrl = book.cardImage || book.cover || book.coverImage || '';
+            const coverDisplay = cardUrl
+                ? `background-image: url('${cardUrl}')`
                 : `background-color: #eee; background-image: linear-gradient(45deg, #f3f3f3 25%, transparent 25%), linear-gradient(-45deg, #f3f3f3 25%, transparent 25%); background-size: 20px 20px;`;
+
+            // علامة المفضلة
+            const favHeart = book.isFavorite
+                ? `<span class="fav-heart" title="مضاف للمفضلة">❤️</span>`
+                : '';
 
             const card = document.createElement('div');
             card.className = 'book-card';
             card.innerHTML = `
                 <div class="card-header" onclick="event.stopPropagation()">
-                    <div class="card-title" title="${book.title || 'بدون عنوان'}">${book.title || 'بدون عنوان'}</div>
+                    <div class="card-title" title="${book.title || 'بدون عنوان'}">${applyRoyalStyles(book.title || 'بدون عنوان')}</div>
                     <div style="position:relative;">
                         <button class="dots-btn" onclick="openBookPreview('${book.id}')" title="خيارات الكتاب">⋮</button>
                     </div>
                 </div>
                 <div class="card-cover" style="${coverDisplay}" onclick="openBook('${book.id}')">
-                    ${!coverUrl ? '<span style="position:absolute; top:45%; width:100%; text-align:center; color:#999; font-weight:bold;">بدون غلاف</span>' : ''}
+                    ${!cardUrl ? '<span style="position:absolute; top:45%; width:100%; text-align:center; color:#999; font-weight:bold;">بدون غلاف</span>' : ''}
+                    ${favHeart}
                     <div class="card-categories-container">${catsHtml}</div>
                 </div>
             `;
@@ -1012,23 +1062,28 @@
         }
 
         currentActionBookId = bookId;
-        document.getElementById('modalBookTitle').innerText = book.title || 'كتاب بدون عنوان';
+        // تطبيق التنسيقات على عنوان الكتاب في النافذة
+        const titleEl = document.getElementById('modalBookTitle');
+        titleEl.innerHTML = applyRoyalStyles(book.title || 'كتاب بدون عنوان');
 
         // عرض الاقتباس
         const highCont = document.getElementById('modalHighlights');
         const quoteEl = document.getElementById('modalBookQuote');
         if (quoteEl) {
-            quoteEl.innerText = book.quote
-                ? `" ${book.quote} "`
+            quoteEl.innerHTML = book.quote
+                ? applyRoyalStyles(`" ${book.quote} "`)
                 : "لم يتم وضع اقتباس مميز لهذا الكتاب بعد.";
         } else {
             highCont.innerHTML = book.quote
-                ? `<p class="quote">" ${book.quote} "</p>`
+                ? `<p class="quote">${applyRoyalStyles('" ' + book.quote + ' "')}</p>`
                 : "<p style='color:#999; font-size:11pt;'>لم يتم وضع اقتباس مميز لهذا الكتاب بعد.</p>";
         }
 
         // إعادة تصفير قائمة الصور
         hideImageInput();
+
+        // ضبط حالة زر المفضلة
+        updateFavBtn(book);
 
         // محرك توليد المعاينة
         const previewCont = document.getElementById('modalPreview');
@@ -1036,7 +1091,7 @@
 
         const settings = book.settings || { pageColor: '#fff', textColor: '#000', fontFamily: 'Amiri', fontSize: '18pt' };
 
-        // دالة مساعدة لإنشاء صفحة معاينة بالتنسيق الصحيح
+        // دالة مساعدة لإنشاء صفحة معاينة بالتنسيق الصحيح مع تطبيق plugins
         const createPage = (htmlContent, isCover = false) => {
             const page = document.createElement('div');
             page.className = 'full-page';
@@ -1049,6 +1104,9 @@
                 page.style.flexDirection = 'column';
                 page.style.justifyContent = 'center';
             }
+            // تطبيق التنسيقات عبر applyRoyalStyles على محتوى النص النقي
+            // المحتوى المُخزَّن (coverHtml, tocHtml, contentPages) هو HTML جاهز من المحرر
+            // نضعه مباشرة لأنه مُنسَّق مسبقاً
             page.innerHTML = htmlContent;
             previewCont.appendChild(page);
         };
@@ -1059,10 +1117,10 @@
         if (book.contentPages && book.contentPages.length > 0) {
             book.contentPages.forEach(pageHtml => createPage(pageHtml));
         } else if (book.text) {
-            // دعم احتياطي للمحتوى النصي القديم
+            // دعم احتياطي للمحتوى النصي القديم — نطبق عليه التنسيقات
             let rawText = book.text;
-            let contentChunks = rawText.match(/.{1,1500}/g) || [rawText];
-            contentChunks.forEach(chunk => createPage(`<p>${chunk.replace(/\n/g, '<br>')}</p>`));
+            let contentChunks = rawText.match(/.{1,1500}/gs) || [rawText];
+            contentChunks.forEach(chunk => createPage(`<div>${applyRoyalStyles(chunk)}</div>`));
         } else {
             createPage('<div style="text-align:center; color:#999; margin-top:50%;">محتوى فارغ.. ابدأ بكتابة الفصل الأول.</div>');
         }
@@ -1088,6 +1146,66 @@
 
     function confirmDeleteBookFromModal() {
         if(currentActionBookId) requestDeleteBook();
+    }
+
+    // --- منطق المفضلة ---
+    function updateFavBtn(book) {
+        const icon = document.getElementById('favBtnIcon');
+        const text = document.getElementById('favBtnText');
+        if (!icon || !text) return;
+        if (book && book.isFavorite) {
+            icon.textContent = '❤️';
+            text.textContent = 'إزالة من المفضلة';
+        } else {
+            icon.textContent = '🤍';
+            text.textContent = 'إضافة إلى المفضلة';
+        }
+    }
+
+    function toggleFavorite() {
+        const book = books.find(b => b.id === currentActionBookId);
+        if (!book) return;
+
+        if (book.isFavorite) {
+            // إزالة من المفضلة
+            if (confirm('هل تريد إزالة هذا الكتاب من المفضلة؟')) {
+                book.isFavorite = false;
+                book.updatedAt = Date.now();
+                saveData();
+                renderBooks();
+                updateFavBtn(book);
+                // مزامنة مع السحابة إن أمكن
+                syncFavoriteToCloud(book);
+            }
+        } else {
+            // إضافة إلى المفضلة
+            if (confirm('هل تريد إضافة هذا الكتاب إلى المفضلة؟')) {
+                book.isFavorite = true;
+                book.updatedAt = Date.now();
+                saveData();
+                renderBooks();
+                updateFavBtn(book);
+                // مزامنة مع السحابة إن أمكن
+                syncFavoriteToCloud(book);
+            }
+        }
+    }
+
+    async function syncFavoriteToCloud(book) {
+        if (navigator.onLine && typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'member') {
+            try {
+                await fetch(AUTH_CONFIG.SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "save_book", userId: currentUser.id, bookData: book })
+                });
+            } catch(e) {
+                // لا بأس، البيانات محفوظة في localStorage وستُزامَن لاحقاً
+                localStorage.setItem('pending_sync_book', JSON.stringify(book));
+            }
+        } else if (!navigator.onLine) {
+            // حفظ للمزامنة لاحقاً
+            localStorage.setItem('pending_sync_book', JSON.stringify(book));
+        }
     }
 
     // --- منطق تعديل الغلاف من داخل النافذة ---
@@ -1147,20 +1265,19 @@
                 const blob = await response.blob();
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                    book.cover = reader.result;
-                    book.coverImage = reader.result;
+                    // حفظ صورة البطاقة في حقل منفصل لا يؤثر على غلاف الكتاب
+                    book.cardImage = reader.result;
                     finalizeImageUpdate();
                 };
                 reader.readAsDataURL(blob);
             } catch (e) {
                 console.warn("فشل التحويل بسبب CORS، سيتم حفظ الرابط كنص.");
-                book.cover = urlInput.value.trim();
-                book.coverImage = urlInput.value.trim();
+                book.cardImage = urlInput.value.trim();
                 finalizeImageUpdate();
             }
         } else if (customCardImage) {
-            book.cover = customCardImage;
-            book.coverImage = customCardImage;
+            // حفظ صورة البطاقة في حقل منفصل لا يؤثر على غلاف الكتاب
+            book.cardImage = customCardImage;
             finalizeImageUpdate();
         } else {
             alert("الرجاء اختيار صورة أو إدخال رابط أولاً.");
@@ -1171,49 +1288,102 @@
         const book = books.find(b => b.id === currentActionBookId);
         if (!book) return;
 
-        // رسم الغلاف برمجياً بناء على بيانات الكتاب
+        // إنشاء iframe مخفي لتصيير غلاف الكتاب كما في المحرر
+        // نعتمد على coverHtml إذا كان موجوداً، وإلا نرسمه برمجياً مطابقاً لمظهر الغلاف في المحرر
+        const settings = book.settings || {};
+        const pageColor = settings.pageColor || '#FFFDD0';
+        const textColor = settings.textColor || '#333';
+        const fontFamily = settings.fontFamily || 'Amiri';
+        const fontSize = settings.fontSize || '18pt';
+
         const canvas = document.createElement('canvas');
-        canvas.width = 400; canvas.height = 600;
+        // نسبة A4 تقريباً (250mm x 353mm)
+        canvas.width = 500;
+        canvas.height = 706;
         const ctx = canvas.getContext('2d');
 
-        ctx.fillStyle = book.settings?.pageColor || '#2c3e50';
+        // خلفية الصفحة
+        ctx.fillStyle = pageColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.strokeStyle = '#b8860b'; ctx.lineWidth = 10;
-        ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+        // إذا كان هناك صورة غلاف في الكتاب نضعها في الخلفية
+        const coverSrc = book.cover || book.coverImage;
 
-        ctx.fillStyle = book.settings?.textColor || '#ffffff';
-        ctx.font = 'bold 36px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        const drawTextOnCanvas = () => {
+            // حدود ذهبية (مثل style-islamic)
+            ctx.strokeStyle = '#b8860b';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([]);
+            // مثلثات الزوايا
+            ctx.beginPath();
+            ctx.moveTo(15, 50); ctx.lineTo(50, 15);
+            ctx.moveTo(canvas.width-15, 50); ctx.lineTo(canvas.width-50, 15);
+            ctx.moveTo(15, canvas.height-50); ctx.lineTo(50, canvas.height-15);
+            ctx.moveTo(canvas.width-15, canvas.height-50); ctx.lineTo(canvas.width-50, canvas.height-15);
+            ctx.stroke();
 
-        const title = book.title || 'بدون عنوان';
-        const words = title.split(' ');
-        let line = ''; let y = 300;
+            // العنوان (55pt محوّل تناسبياً)
+            ctx.fillStyle = textColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
 
-        words.forEach(word => {
-            let testLine = line + word + ' ';
-            let metrics = ctx.measureText(testLine);
-            if (metrics.width > canvas.width - 80) {
-                ctx.fillText(line, canvas.width/2, y);
-                line = word + ' ';
-                y += 50;
-            } else {
-                line = testLine;
+            const title = book.title || 'بدون عنوان';
+            // رسم العنوان بخط كبير
+            ctx.font = `bold 52px serif`;
+            const words = title.split(' ');
+            let lines = []; let line = '';
+            words.forEach(word => {
+                let test = line + word + ' ';
+                if (ctx.measureText(test).width > canvas.width - 80) { if (line) lines.push(line.trim()); line = word + ' '; }
+                else { line = test; }
+            });
+            if (line.trim()) lines.push(line.trim());
+
+            let startY = canvas.height / 2 - (lines.length - 1) * 35;
+            lines.forEach((l, i) => {
+                ctx.fillText(l, canvas.width / 2, startY + i * 70);
+            });
+
+            // المؤلف (30pt)
+            if (book.author) {
+                ctx.font = `30px serif`;
+                ctx.fillStyle = '#4a3f35';
+                ctx.fillText(book.author, canvas.width / 2, startY + lines.length * 70 + 30);
             }
-        });
-        ctx.fillText(line, canvas.width/2, y);
 
-        book.cover = canvas.toDataURL('image/jpeg', 0.8);
-        book.coverImage = book.cover;
-        finalizeImageUpdate();
+            // التاريخ
+            if (book.date) {
+                ctx.font = `20px serif`;
+                ctx.fillStyle = '#777';
+                ctx.fillText(book.date, canvas.width / 2, canvas.height - 60);
+            }
+
+            // حفظ الصورة في cardImage فقط — لا نمس cover أو coverImage
+            book.cardImage = canvas.toDataURL('image/jpeg', 0.92);
+            finalizeImageUpdate();
+        };
+
+        if (coverSrc) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                drawTextOnCanvas();
+            };
+            img.onerror = () => { drawTextOnCanvas(); };
+            img.src = coverSrc;
+        } else {
+            drawTextOnCanvas();
+        }
     }
 
     function finalizeImageUpdate() {
         saveData();
         renderBooks();
         hideImageInput();
-        alert("تم تحديث صورة الغلاف بنجاح.");
+        alert("تم تحديث صورة بطاقة الكتاب بنجاح.");
         document.getElementById('bookModal').style.display = 'none';
     }
 

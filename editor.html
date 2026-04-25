@@ -350,8 +350,17 @@
     function updateGlobalBooksList(book) {
         let allBooks = JSON.parse(localStorage.getItem('royal_books_list') || '[]');
         let index = allBooks.findIndex(b => b.id === book.id);
-        if (index !== -1) allBooks[index] = { ...allBooks[index], ...book };
-        else allBooks.push(book);
+        if (index !== -1) {
+            // نصون الحقول التي تُدار من index.html ولا علاقة للمحرر بها مباشرة
+            const preserved = {
+                isFavorite: allBooks[index].isFavorite,
+                // cardImage: نأخذها من book (المحرر) إن وُجدت، وإلا نحتفظ بما في القائمة
+                cardImage: book.cardImage || allBooks[index].cardImage,
+            };
+            allBooks[index] = { ...allBooks[index], ...book, ...preserved };
+        } else {
+            allBooks.push(book);
+        }
         localStorage.setItem('royal_books_list', JSON.stringify(allBooks));
     }
 
@@ -452,7 +461,9 @@
         document.getElementById('cFontSize').value = s.size || 20; document.getElementById('globalBgPicker').value = s.color || s.bgColor || "#FFFDD0"; document.getElementById('pageStyle').value = s.style || "style-islamic";
         
         customPageBackgrounds = s.customBgs || {}; 
-        mediaVault = uploadedBookData.vault || s.vault || {}; 
+        mediaVault = uploadedBookData.vault || s.vault || {};
+        // استعادة cardImage عند الاستيراد (مستقل عن الغلاف)
+        customCardImage = s.cardImage || null;
         saveVaultToDB(); updateGlobalColor(document.getElementById('globalBgPicker').value);
 
         if(useOriginalEngine && uploadedBookData.engineVersion) {
@@ -832,6 +843,10 @@
                 document.getElementById('colorCodeInput').value = savedColor.replace('#', '');
                 updateGlobalColor(savedColor);
                 customPageBackgrounds = s.customBgs || {};
+                // استعادة الحقول المستقلة: صورة البطاقة وحالة المفضلة
+                // لا نضعها في cCoverImg لأن cardImage مستقلة تماماً عن غلاف الكتاب
+                customCardImage = s.cardImage || null;
+                // isFavorite تُحفظ في كائن الكتاب ولا تحتاج متغيراً منفصلاً في المحرر
             }
             setTimeout(() => {
                 buildBook();
