@@ -98,32 +98,63 @@
     let indexPage = "./index.html"; // تأكد من المسار الصحيح
 
     async function installOffline() {
-        const btn = document.getElementById('startBtn');
-        const pCont = document.getElementById('progressCont');
-        const pFill = document.getElementById('progressFill');
-        const status = document.getElementById('status');
+    const btn = document.getElementById('startBtn');
+    const pCont = document.getElementById('progressCont');
+    const pFill = document.getElementById('progressFill');
+    const status = document.getElementById('status');
 
-        btn.style.display = 'none';
-        pCont.style.display = 'block';
-        status.innerText = "جاري استدعاء الملفات من السحابة...⏳";
-        
-        if ('serviceWorker' in navigator) {
-            try {
-                // 1. تسجيل الـ Service Worker
-                const reg = await navigator.serviceWorker.register('sw.js');
+    btn.style.display = 'none';
+    pCont.style.display = 'block';
+    status.innerText = "جاري استدعاء المحرك...⏳";
+    
+    if ('serviceWorker' in navigator) {
+        try {
+            // تسجيل الملف
+            const reg = await navigator.serviceWorker.register('sw.js');
+            
+            // دالة تشغيل الشريط
+            const startProgressBar = () => {
+                let progress = 0;
+                const interval = setInterval(() => {
+                    if (progress < 30) progress += 5;
+                    else if (progress < 70) progress += 3;
+                    else if (progress < 95) progress += 1;
+                    else progress += 0.2;
+
+                    pFill.style.width = progress + '%';
+                    status.innerText = `جاري تأمين الملفات محلياً... ${Math.floor(progress)}%`;
+
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        status.style.color = "var(--royal-green)";
+                        status.innerText = "✅ اكتمل التجهيز بنجاح!";
+                        setTimeout(() => window.location.href = indexPage, 1000);
+                    }
+                }, 150);
+            };
+
+            // التحقق: إذا كان الـ SW مسيطر فعلاً، ابدأ فوراً
+            if (navigator.serviceWorker.controller) {
+                startProgressBar();
+            } else {
+                // إذا لم يكن مسيطر، انتظر أول إشارة سيطرة ثم ابدأ
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    startProgressBar();
+                });
                 
-                // 2. الانتظار حتى التفعيل
-                if (!navigator.serviceWorker.controller) {
-                    await new Promise(resolve => {
-                        const listener = () => {
-                            if (navigator.serviceWorker.controller) {
-                                navigator.serviceWorker.removeEventListener('controllerchange', listener);
-                                resolve();
-                            }
-                        };
-                        navigator.serviceWorker.addEventListener('controllerchange', listener);
-                    });
-                }
+                // في بعض الحالات، نحتاج لإرسال إشارة تنشيط يدوية أو إعادة تحميل بسيطة
+                // لكن مع سطر clients.claim() في sw.js سيعمل الـ listener أعلاه فوراً.
+            }
+            
+        } catch (e) {
+            console.error("Install Error:", e);
+            status.innerText = "❌ حدث خطأ في النظام. يرجى المحاولة لاحقاً.";
+            btn.style.display = 'block';
+        }
+    } else {
+        status.innerText = "المتصفح لا يدعم العمل دون اتصال.";
+    }
+}
 
                 // 3. محاكاة تقدم واقعية وسريعة (متوافقة مع سرعة التحميل الفعلي)
                 let progress = 0;
