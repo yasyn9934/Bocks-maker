@@ -4,7 +4,7 @@
 
 const AUTH_CONFIG = {
     // الرابط الخاص بك الذي نشرته مؤخراً
-    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzIeRXPFDmjC7kgGkwpDtralJ-YtkS8xeUgVTbx3kpZ76nb9osCCiY4v1m0NZBISHQu/exec",
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzVIL8_9oYVEfAIvIlzcQjz9SV1SR2Fni0k2Euo__92mtERHfiPJHnoxQKSkvYM5lB6/exec",
     GUEST_LIMIT: 1 
 };
 
