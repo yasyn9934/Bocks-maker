@@ -1062,40 +1062,52 @@ function saveData() {
         syncBtn.style.display = isStandalone ? 'flex' : 'none';
     }
 
-// 2. محرك المعاينة المطور (المطابق للمحرر)
+
+// 2. محرك المعاينة المطور (يدعم الكتب القديمة والجديدة)
 function openBookPreview(bookId) {
-    currentActionBookId = bookId;
+    activeBookId = bookId;
     const book = books.find(b => b.id === bookId);
     if(!book) return;
 
-    document.getElementById('modalBookTitle').innerText = book.title;
+    document.getElementById('modalBookTitle').innerText = book.title || "بدون عنوان";
     document.getElementById('modalBookQuote').innerText = book.quote ? `"${book.quote}"` : "لا يوجد اقتباس.";
-    updateFavBtn(book);
+
     const previewCont = document.getElementById('modalPreview');
     previewCont.innerHTML = ""; 
-    previewCont.style.overflowY = "auto";
-
-    // جلب الإعدادات الأصلية من الكتاب
+    
     const settings = book.settings || {};
-    const pageStyleClass = book.pageStyle || 'style-modern'; // النمط المختار في المحرر
+    const pageStyleClass = book.pageStyle || 'style-modern';
 
     const renderPage = (contentHtml) => {
-        if(!contentHtml) return
+        if(!contentHtml || contentHtml.trim() === '') return;
         const wrapper = document.createElement('div');
-        wrapper.className = 'page-wrapper'; // حاوية للتحكم في الحجم
-            const page = document.createElement('div');
-            page.className = `full-page ${pageStyleClass}`;
-            page.style.backgroundColor = settings.pageColor || '#fff';
-            page.style.color = settings.textColor || '#000';
-            page.innerHTML = applyRoyalStyles(contentHtml); // تطبيق التنسيقات الملكية
-            wrapper.appendChild(page);
-            previewCont.appendChild(wrapper);
+        wrapper.className = 'page-wrapper'; 
+        
+        const page = document.createElement('div');
+        page.className = `full-page ${pageStyleClass}`;
+        page.style.backgroundColor = settings.pageColor || '#fff';
+        page.style.color = settings.textColor || '#000';
+        
+        page.innerHTML = applyRoyalStyles(contentHtml);
+        
+        wrapper.appendChild(page);
+        previewCont.appendChild(wrapper);
     };
 
-    // عرض الغلاف، الفهرس، ثم الصفحات
+    // عرض الغلاف والفهرس
     if (book.coverHtml) renderPage(book.coverHtml);
     if (book.tocHtml) renderPage(book.tocHtml);
-    (book.contentPages || []).forEach(p => renderPage(p));
+
+    // عرض المحتوى: يدعم النظام الجديد (contentPages) والنظام القديم (text)
+    if (book.contentPages && book.contentPages.length > 0) {
+        book.contentPages.forEach(p => renderPage(p));
+    } else if (book.text) {
+        // تقسيم النص القديم إلى صفحات وهمية كل 1500 حرف
+        let chunks = book.text.match(/.{1,1500}/g) || [book.text];
+        chunks.forEach(chunk => renderPage(`<div style="padding: 20px; line-height: 2;">${chunk.replace(/\n/g, '<br>')}</div>`));
+    } else {
+        renderPage('<div style="text-align:center; margin-top:40%; color:#999; font-size:20pt;">الكتاب فارغ... ابدأ الإبداع!</div>');
+    }
 
     document.getElementById('bookModal').style.display = 'flex';
 }
