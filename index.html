@@ -1307,7 +1307,7 @@ function saveData() {
 
 // 2. محرك المعاينة المطور (المطابق للمحرر)
 function openBookPreview(bookId) {
-    activeBookId = bookId;
+    currentActionBookId = bookId;
     const book = books.find(b => b.id === bookId);
     if(!book) return;
 
