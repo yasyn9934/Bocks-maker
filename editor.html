@@ -236,8 +236,7 @@
     <div id="smart-panel"></div>
     <div id="book-container"></div>
 
-<script>
-    // --- المتغيرات العامة المحدثة ---
+<script>    // --- المتغيرات العامة المحدثة ---
     let indexPage = "index.html"
     let lastSavedData = ""; 
     let mediaVault = {};
@@ -316,7 +315,7 @@
                     userName: currentUser.username,
                     bookId: bookData.id,
                     bookData: bookData,
-                    categoryName: "عام"
+                    categoryName: (currentBookCategories && currentBookCategories.length > 0) ? currentBookCategories[0] : "عام"
                 })
             });
 
@@ -420,6 +419,10 @@
         if (confirm("تنبيه: سيتم مسح العمل الحالي بالكامل. تأكد من الحفظ.")) {
             localStorage.removeItem('bookData');
             mediaVault = {}; saveVaultToDB(); currentBookId = null;
+            // تصفير جميع متغيرات الكتاب
+            currentBookCategories = [];
+            bookHighlights = [];
+            customCardImage = null;
             document.getElementById('mainText').value = ""; document.getElementById('cTitle').value = ""; document.getElementById('cAuthor').value = ""; document.getElementById('cDate').value = ""; document.getElementById('cCoverImg').value = "";
             document.getElementById('cFontSize').value = 20; document.getElementById('globalBgPicker').value = "#FFFDD0"; document.getElementById('colorCodeInput').value = "FFFDD0"; document.getElementById('pageStyle').value = "style-islamic";
             customPageBackgrounds = {}; updateGlobalColor("#FFFDD0"); renderVaultList(); autoSaveAndBuild(); hidePanel(); document.getElementById('mainText').focus();
