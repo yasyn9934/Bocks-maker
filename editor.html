@@ -307,15 +307,21 @@
         try {
             if (!navigator.onLine) throw new Error("Offline");
 
+            // تنظيف bookId من أي prefix مزدوج (book_book_ → book_)
+            const cleanBookId = (bookData.id || '').replace(/^book_/i, '');
+            // جلب اسم التصنيف الأول إن وُجد
+            const catName = (currentBookCategories && currentBookCategories.length > 0)
+                ? currentBookCategories[0] : "عام";
+
             const response = await fetch(AUTH_CONFIG.SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify({
                     action: "save_book",
                     userId: currentUser.id,
                     userName: currentUser.username,
-                    bookId: bookData.id,
+                    bookId: cleanBookId,
                     bookData: bookData,
-                    categoryName: (currentBookCategories && currentBookCategories.length > 0) ? currentBookCategories[0] : "عام"
+                    categoryName: catName
                 })
             });
 
@@ -419,10 +425,6 @@
         if (confirm("تنبيه: سيتم مسح العمل الحالي بالكامل. تأكد من الحفظ.")) {
             localStorage.removeItem('bookData');
             mediaVault = {}; saveVaultToDB(); currentBookId = null;
-            // تصفير جميع متغيرات الكتاب
-            currentBookCategories = [];
-            bookHighlights = [];
-            customCardImage = null;
             document.getElementById('mainText').value = ""; document.getElementById('cTitle').value = ""; document.getElementById('cAuthor').value = ""; document.getElementById('cDate').value = ""; document.getElementById('cCoverImg').value = "";
             document.getElementById('cFontSize').value = 20; document.getElementById('globalBgPicker').value = "#FFFDD0"; document.getElementById('colorCodeInput').value = "FFFDD0"; document.getElementById('pageStyle').value = "style-islamic";
             customPageBackgrounds = {}; updateGlobalColor("#FFFDD0"); renderVaultList(); autoSaveAndBuild(); hidePanel(); document.getElementById('mainText').focus();
