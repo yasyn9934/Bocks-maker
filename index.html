@@ -469,49 +469,21 @@
         }
         .page-wrapper {
     margin-bottom: 30px;
-    transform: scale(0.6); /* تصغير الصفحة لتناسب العرض دون تغيير الخط */
+    transform: scale(0.6);
     transform-origin: top center;
-    width: 794px; /* عرض A4 الثابت */
-    height: 1123px; /* طول A4 الثابت */
-    margin-top: -150px; /* لتقليل الفراغات الناتجة عن الـ scale */
+    width: 794px;
+    height: 1123px;
+    margin-top: -150px;
 }
-
         /* إدارة التصنيفات */
-        .cat-edit-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 12px;
-            border: 1px solid #e8ecf0;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            background: #fff;
-            flex-wrap: wrap;
-            transition: box-shadow 0.2s;
-        }
-        .cat-edit-row:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
-        .cat-edit-row .cat-color-dot {
-            width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(0,0,0,0.1);
-        }
-        .cat-edit-row input[type="text"] {
-            flex: 1; min-width: 100px; padding: 7px 10px;
-            border: 1px solid #ddd; border-radius: 6px;
-            font-family: 'Amiri', serif; font-size: 13pt;
-        }
-        .cat-edit-row input[type="color"] {
-            width: 38px; height: 36px; border: 1px solid #ddd;
-            border-radius: 6px; cursor: pointer; flex-shrink: 0; padding: 2px;
-        }
-        .cat-edit-row input[type="number"] {
-            width: 65px; padding: 7px; border: 1px solid #ddd;
-            border-radius: 6px; font-size: 12pt; flex-shrink: 0;
-        }
-        .cat-delete-btn {
-            background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2;
-            border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 14px;
-            flex-shrink: 0; transition: background 0.2s;
-        }
-        .cat-delete-btn:hover { background: #d32f2f; color: white; }
+        .cat-edit-row { display:flex; align-items:center; gap:8px; padding:10px 12px; border:1px solid #e8ecf0; border-radius:10px; margin-bottom:8px; background:#fff; flex-wrap:wrap; transition:box-shadow 0.2s; }
+        .cat-edit-row:hover { box-shadow:0 3px 10px rgba(0,0,0,0.08); }
+        .cat-color-dot { width:20px; height:20px; border-radius:50%; flex-shrink:0; border:2px solid rgba(0,0,0,0.1); }
+        .cat-edit-row input[type="text"] { flex:1; min-width:100px; padding:7px 10px; border:1px solid #ddd; border-radius:6px; font-family:'Amiri',serif; font-size:13pt; }
+        .cat-edit-row input[type="color"] { width:38px; height:36px; border:1px solid #ddd; border-radius:6px; cursor:pointer; flex-shrink:0; padding:2px; }
+        .cat-edit-row input[type="number"] { width:65px; padding:7px; border:1px solid #ddd; border-radius:6px; font-size:12pt; flex-shrink:0; }
+        .cat-delete-btn { background:#ffebee; color:#d32f2f; border:1px solid #ffcdd2; border-radius:6px; padding:6px 10px; cursor:pointer; font-size:14px; flex-shrink:0; }
+        .cat-delete-btn:hover { background:#d32f2f; color:white; }
 
     </style>
 </head>
@@ -576,16 +548,14 @@
 
     <!-- نافذة إدارة التصنيفات الشاملة -->
     <div class="modal-overlay" id="categoriesManagerModal">
-        <div class="modal-content" style="max-width: 600px; width: 95%; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden;">
+        <div class="modal-content" style="max-width:600px; width:95%; max-height:88vh; display:flex; flex-direction:column; overflow:hidden;">
             <h2 class="modal-title" style="flex-shrink:0;">📋 قائمة التصنيفات</h2>
             <div id="catSyncStatus" style="text-align:center; font-size:11pt; color:#888; margin-bottom:10px; flex-shrink:0;"></div>
 
-            <!-- قائمة التصنيفات الحالية (قابلة للتمرير) -->
-            <div id="categoriesListContainer" style="flex:1; overflow-y:auto; margin-bottom: 15px; padding-left: 4px;"></div>
+            <div id="categoriesListContainer" style="flex:1; overflow-y:auto; margin-bottom:15px; padding-left:4px;"></div>
 
-            <!-- قسم إضافة تصنيف جديد -->
-            <div style="border: 1px dashed #b8860b; padding: 15px; border-radius: 10px; margin-bottom: 15px; background: #fffbf0; flex-shrink:0;">
-                <h3 style="font-family: 'Aref Ruqaa'; color: var(--royal-green); margin-bottom: 12px; font-size:14pt;">➕ إضافة تصنيف جديد</h3>
+            <div style="border:1px dashed #b8860b; padding:15px; border-radius:10px; margin-bottom:15px; background:#fffbf0; flex-shrink:0;">
+                <h3 style="font-family:'Aref Ruqaa'; color:var(--royal-green); margin-bottom:12px; font-size:14pt;">➕ إضافة تصنيف جديد</h3>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                     <input type="text" id="newCatName" class="modal-input" placeholder="اسم التصنيف" style="flex:2; min-width:120px; margin-bottom:0;">
                     <input type="color" id="newCatColor" value="#6B8E23" style="width:50px; height:42px; border:1px solid #ddd; border-radius:8px; cursor:pointer; flex-shrink:0;">
@@ -594,7 +564,6 @@
                 </div>
             </div>
 
-            <!-- أزرار الحفظ والإلغاء -->
             <div class="modal-actions" style="flex-shrink:0;">
                 <button class="btn btn-primary" onclick="saveCategoriesManager()">💾 حفظ التغيرات</button>
                 <button class="btn btn-info" onclick="closeModal('categoriesManagerModal')" style="background:#d32f2f;">✕ إلغاء</button>
@@ -785,7 +754,6 @@
     async function syncPendingBooks() {
         if (!navigator.onLine || typeof currentUser === 'undefined' || !currentUser || currentUser.role !== 'member') return;
 
-        // مزامنة الكتاب المعلق
         const pendingBook = localStorage.getItem('pending_sync_book');
         if (pendingBook) {
             try {
@@ -794,11 +762,9 @@
                     body: JSON.stringify({ action: "save_book", userId: currentUser.id, bookData: JSON.parse(pendingBook) })
                 });
                 localStorage.removeItem('pending_sync_book');
-                console.log("تمت مزامنة الكتاب المعلق بنجاح");
             } catch(e) {}
         }
 
-        // مزامنة التصنيفات المعلقة
         const pendingCats = localStorage.getItem('pending_sync_categories');
         if (pendingCats) {
             try {
@@ -807,7 +773,6 @@
                     body: JSON.stringify({ action: "save_categories", userId: currentUser.id, categories: JSON.parse(pendingCats) })
                 });
                 localStorage.removeItem('pending_sync_categories');
-                console.log("تمت مزامنة التصنيفات المعلقة بنجاح");
             } catch(e) {}
         }
     }
@@ -816,7 +781,6 @@
 function saveData() {
     localStorage.setItem('royal_books_list', JSON.stringify(books));
     localStorage.setItem('royal_categories_list', JSON.stringify(categories));
-    // استدعاء دالة المزامنة من auth.js إذا كان المستخدم مسجلاً
     if (typeof syncWithCloud === "function") {
         syncWithCloud();
     }
@@ -853,13 +817,12 @@ function saveData() {
     // ============================================================
     // --- نظام إدارة التصنيفات الشامل ---
     // ============================================================
-    let editingCategories = []; // نسخة عمل عند فتح اللوحة
+    let editingCategories = [];
 
     function openCategoriesManager() {
-        // نسخة عميقة من التصنيفات الحالية للتعديل
         editingCategories = JSON.parse(JSON.stringify(categories));
-
         const statusEl = document.getElementById('catSyncStatus');
+
         if (navigator.onLine && typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'member') {
             if (statusEl) statusEl.textContent = '⏳ جاري جلب التصنيفات من السحابة...';
             fetch(AUTH_CONFIG.SCRIPT_URL, {
@@ -870,7 +833,6 @@ function saveData() {
             .then(data => {
                 if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
                     editingCategories = mergeCategoriesLists(editingCategories, data.categories);
-                    // حفظ ما جُلب محلياً
                     localStorage.setItem('royal_categories_list', JSON.stringify(editingCategories));
                     categories = JSON.parse(JSON.stringify(editingCategories));
                     if (statusEl) statusEl.textContent = '☁️ تم جلب التصنيفات من السحابة';
@@ -880,60 +842,49 @@ function saveData() {
                 renderCategoriesManagerList();
             })
             .catch(() => {
-                if (statusEl) statusEl.textContent = '⚠️ تعذر الاتصال بالسحابة، جاري التحميل محلياً';
+                if (statusEl) statusEl.textContent = '⚠️ تعذر الاتصال — التصنيفات محلية';
                 renderCategoriesManagerList();
             });
         } else {
-            if (statusEl) statusEl.textContent = navigator.onLine ? '💾 تصنيفات محلية (يرجى تسجيل الدخول للمزامنة)' : '📴 غير متصل — التصنيفات محلية فقط';
+            if (statusEl) statusEl.textContent = !navigator.onLine ? '📴 غير متصل — التصنيفات محلية فقط' : '💾 تصنيفات محلية';
             renderCategoriesManagerList();
         }
-
         openModal('categoriesManagerModal');
     }
 
     function mergeCategoriesLists(local, cloud) {
         const map = {};
-        // السحابة أولاً ثم المحلي (الأحدث updatedAt يفوز)
         [...cloud, ...local].forEach(cat => {
-            if (!map[cat.id] || (cat.updatedAt || 0) > (map[cat.id].updatedAt || 0)) {
-                map[cat.id] = cat;
-            }
+            if (!map[cat.id] || (cat.updatedAt || 0) > (map[cat.id].updatedAt || 0)) map[cat.id] = cat;
         });
-        // ضمان وجود التصنيف الافتراضي
-        if (!map['default']) {
-            map['default'] = { id: 'default', name: 'بلا تصنيف', color: '#888888', order: 999 };
-        }
+        if (!map['default']) map['default'] = { id: 'default', name: 'بلا تصنيف', color: '#888888', order: 999 };
         return Object.values(map).sort((a, b) => (a.order || 999) - (b.order || 999));
     }
 
     function renderCategoriesManagerList() {
         const container = document.getElementById('categoriesListContainer');
         if (!container) return;
-
         if (editingCategories.length === 0) {
-            container.innerHTML = '<p style="color:#999; text-align:center; padding:20px;">لا توجد تصنيفات بعد.</p>';
+            container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">لا توجد تصنيفات.</p>';
             return;
         }
-
         container.innerHTML = editingCategories.map(cat => {
             const isDefault = cat.id === 'default';
-            const readonlyAttr = isDefault ? 'readonly style="background:#f5f5f5; color:#999;"' : '';
-            const disabledAttr = isDefault ? 'disabled' : '';
             return `
             <div class="cat-edit-row" id="cat-row-${cat.id}">
                 <span class="cat-color-dot" id="dot-${cat.id}" style="background:${cat.color};"></span>
-                <input type="text" value="${cat.name.replace(/"/g, '&quot;')}"
-                    onchange="updateEditingCat('${cat.id}', 'name', this.value)"
-                    ${readonlyAttr} placeholder="اسم التصنيف">
+                <input type="text" value="${cat.name.replace(/"/g,'&quot;')}"
+                    onchange="updateEditingCat('${cat.id}','name',this.value)"
+                    ${isDefault ? 'readonly style="background:#f5f5f5;color:#999;"' : ''} placeholder="اسم التصنيف">
                 <input type="color" value="${cat.color}"
-                    oninput="updateEditingCat('${cat.id}', 'color', this.value)"
-                    title="لون التصنيف" ${disabledAttr}>
+                    oninput="updateEditingCat('${cat.id}','color',this.value)"
+                    ${isDefault ? 'disabled' : ''} title="اللون">
                 <input type="number" value="${cat.order || 1}" min="1"
-                    onchange="updateEditingCat('${cat.id}', 'order', parseInt(this.value)||1)"
-                    title="الترتيب (رقم أصغر = يظهر أولاً)" ${disabledAttr}>
+                    onchange="updateEditingCat('${cat.id}','order',parseInt(this.value)||1)"
+                    ${isDefault ? 'disabled' : ''} title="الترتيب">
                 ${!isDefault
-                    ? `<button class="cat-delete-btn" onclick="deleteEditingCat('${cat.id}')" title="حذف هذا التصنيف">🗑️</button>`
-                    : `<span style="width:38px; flex-shrink:0;"></span>`}
+                    ? `<button class="cat-delete-btn" onclick="deleteEditingCat('${cat.id}')" title="حذف">🗑️</button>`
+                    : `<span style="width:38px;flex-shrink:0;"></span>`}
             </div>`;
         }).join('');
     }
@@ -943,7 +894,6 @@ function saveData() {
         if (!cat) return;
         cat[field] = value;
         cat.updatedAt = Date.now();
-        // تحديث فوري للألوان في الواجهة
         if (field === 'color') {
             const dot = document.getElementById('dot-' + id);
             if (dot) dot.style.background = value;
@@ -953,82 +903,50 @@ function saveData() {
     function deleteEditingCat(id) {
         const cat = editingCategories.find(c => c.id === id);
         if (!cat) return;
-        const booksUsingCat = books.filter(b => (b.categoryIds || []).includes(id) || b.categoryId === id).length;
-        const msg = booksUsingCat > 0
-            ? `هل تريد حذف التصنيف "${cat.name}"؟\nيوجد ${booksUsingCat} كتاب مرتبط به وسيتحول إلى "بلا تصنيف".`
-            : `هل تريد حذف التصنيف "${cat.name}"؟`;
-        if (confirm(msg)) {
-            editingCategories = editingCategories.filter(c => c.id !== id);
-            renderCategoriesManagerList();
-        }
+        const n = books.filter(b => (b.categoryIds||[]).includes(id) || b.categoryId === id).length;
+        const msg = n > 0 ? `هل تريد حذف "${cat.name}"؟\n${n} كتاب مرتبط سيتحول إلى "بلا تصنيف".` : `هل تريد حذف "${cat.name}"؟`;
+        if (confirm(msg)) { editingCategories = editingCategories.filter(c => c.id !== id); renderCategoriesManagerList(); }
     }
 
     function addNewCategoryToList() {
         const nameEl = document.getElementById('newCatName');
-        const colorEl = document.getElementById('newCatColor');
-        const orderEl = document.getElementById('newCatOrder');
         const name = nameEl.value.trim();
-        if (!name) { alert('يرجى إدخال اسم التصنيف أولاً.'); nameEl.focus(); return; }
-
-        const newCat = {
-            id: 'cat_' + Date.now(),
-            name,
-            color: colorEl.value,
-            order: parseInt(orderEl.value) || 1,
-            updatedAt: Date.now()
-        };
-        editingCategories.push(newCat);
-        editingCategories.sort((a, b) => (a.order || 999) - (b.order || 999));
-
+        if (!name) { alert('يرجى إدخال اسم التصنيف.'); nameEl.focus(); return; }
+        editingCategories.push({ id: 'cat_' + Date.now(), name, color: document.getElementById('newCatColor').value, order: parseInt(document.getElementById('newCatOrder').value) || 1, updatedAt: Date.now() });
+        editingCategories.sort((a, b) => (a.order||999) - (b.order||999));
         nameEl.value = '';
-        orderEl.value = '1';
+        document.getElementById('newCatOrder').value = '1';
         renderCategoriesManagerList();
-        // تمرير القائمة للأسفل لإظهار العنصر الجديد
-        const container = document.getElementById('categoriesListContainer');
-        if (container) setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
+        const c = document.getElementById('categoriesListContainer');
+        if (c) setTimeout(() => { c.scrollTop = c.scrollHeight; }, 50);
     }
 
     async function saveCategoriesManager() {
-        // ترتيب نهائي
-        editingCategories.sort((a, b) => (a.order || 999) - (b.order || 999));
-
-        // تطبيق التصنيفات المعدلة + نقل الكتب المرتبطة بتصنيفات محذوفة
+        editingCategories.sort((a, b) => (a.order||999) - (b.order||999));
+        // نقل كتب التصنيفات المحذوفة إلى "بلا تصنيف"
         const deletedIds = categories.map(c => c.id).filter(id => !editingCategories.find(e => e.id === id));
         if (deletedIds.length > 0) {
             books.forEach(book => {
-                if (book.categoryIds) {
-                    book.categoryIds = book.categoryIds.filter(id => !deletedIds.includes(id));
-                    if (book.categoryIds.length === 0) book.categoryIds = ['default'];
-                }
+                if (book.categoryIds) { book.categoryIds = book.categoryIds.filter(id => !deletedIds.includes(id)); if (!book.categoryIds.length) book.categoryIds = ['default']; }
                 if (deletedIds.includes(book.categoryId)) book.categoryId = 'default';
             });
+            localStorage.setItem('royal_books_list', JSON.stringify(books));
         }
-
         categories = editingCategories;
-        // حفظ محلياً دائماً
         localStorage.setItem('royal_categories_list', JSON.stringify(categories));
-        localStorage.setItem('royal_books_list', JSON.stringify(books));
-
-        // حفظ في السحابة إن كان متصلاً
         let cloudSaved = false;
         if (navigator.onLine && typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'member') {
             try {
-                await fetch(AUTH_CONFIG.SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: "save_categories", userId: currentUser.id, categories: categories })
-                });
+                await fetch(AUTH_CONFIG.SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "save_categories", userId: currentUser.id, categories }) });
                 cloudSaved = true;
                 localStorage.removeItem('pending_sync_categories');
-            } catch(e) {
-                localStorage.setItem('pending_sync_categories', JSON.stringify(categories));
-            }
+            } catch(e) { localStorage.setItem('pending_sync_categories', JSON.stringify(categories)); }
         } else if (!navigator.onLine) {
             localStorage.setItem('pending_sync_categories', JSON.stringify(categories));
         }
-
         renderBooks();
         closeModal('categoriesManagerModal');
-        alert('✅ تم حفظ التصنيفات ' + (cloudSaved ? 'محلياً وفي السحابة ☁️' : 'محلياً فقط 💾' + (!navigator.onLine ? ' (ستُزامَن عند الاتصال)' : '')));
+        alert('✅ تم حفظ التصنيفات ' + (cloudSaved ? 'محلياً وفي السحابة ☁️' : 'محلياً فقط 💾'));
     }
 
     // --- التصنيفات المتعددة (من النسخة الجديدة) ---
@@ -1253,12 +1171,8 @@ function saveData() {
         document.getElementById('bookModal').style.display = 'none';
         document.getElementById('authConfirmInput').value = '';
 
-        // حذف من السحابة إن كان متصلاً
         if (bookToDelete && navigator.onLine && typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'member') {
-            fetch(AUTH_CONFIG.SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "delete_book", userId: currentUser.id, bookId: bookToDelete.id })
-            }).catch(() => {});
+            fetch(AUTH_CONFIG.SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "delete_book", userId: currentUser.id, bookId: bookToDelete.id }) }).catch(() => {});
         }
     }
 
@@ -1307,7 +1221,7 @@ function saveData() {
 
 // 2. محرك المعاينة المطور (المطابق للمحرر)
 function openBookPreview(bookId) {
-    currentActionBookId = bookId;
+    activeBookId = bookId;
     const book = books.find(b => b.id === bookId);
     if(!book) return;
 
@@ -1504,7 +1418,7 @@ function openBookPreview(bookId) {
 
     // 3. دالة توليد صورة البطاقة المطابقة للغلاف
 function setCoverFromBookData() {
-    const book = books.find(b => b.id === currentActionBookId);
+    const book = books.find(b => b.id === activeBookId);
     const canvas = document.createElement('canvas');
     canvas.width = 400; canvas.height = 600;
     const ctx = canvas.getContext('2d');
