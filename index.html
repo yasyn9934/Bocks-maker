@@ -1081,7 +1081,7 @@ function saveData() {
 let _modalBookSnapshot = null;
 
 function openBookPreview(bookId) {
-    activeBookId = bookId;
+    currentActionBookId = bookId;
     const book = books.find(b => b.id === bookId);
     if(!book) return;
 
@@ -1292,7 +1292,7 @@ function openBookPreview(bookId) {
 
     // 3. دالة توليد صورة البطاقة المطابقة للغلاف
 function setCoverFromBookData() {
-    const book = books.find(b => b.id === activeBookId);
+    const book = books.find(b => b.id === currentActionBookId);
     const canvas = document.createElement('canvas');
     canvas.width = 400; canvas.height = 600;
     const ctx = canvas.getContext('2d');
