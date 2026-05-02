@@ -342,55 +342,31 @@
             width: 100%;
         }
 
-        /* ══ صفحات الكتاب — مطابقة لـ editor.html ══ */
-        .page-wrapper {
-            position: relative;
+
+        /* صفحات المعاينة الكاملة (تطابق محرك التحرير) */
+        .full-page {
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden; /* يمنع خروج النص */
+    padding: 60px !important;
+    position: relative;
+}
+        .full-page img, .full-page video { max-width: 100%; height: auto; border-radius: 8px; }
+
+        /* صفحات مصغرة (للتوافق مع الكود القديم إذا احتيج لها) */
+        .mini-page {
+            width: 200px;
+            height: 280px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-radius: 5px;
+            padding: 15px;
+            font-size: 9px;
+            line-height: 1.5;
             overflow: hidden;
-            box-sizing: border-box;
-            box-shadow: 0 10px 35px rgba(0,0,0,0.5);
-            flex-shrink: 0;
-        }
-        .page-header {
-            position: absolute; width: 100%;
-            display: flex; justify-content: space-between;
-            padding: 0 35mm; font-size: 14pt; color: #4a3f35;
-            font-family: 'Amiri', serif; font-weight: bold; z-index: 10;
-        }
-        .style-islamic .page-header { top: 6mm; }
-        .style-classic .page-header { top: 5mm; }
-        .style-floral  .page-header { top: 7mm; }
-        .style-royal   .page-header { top: 8mm; }
-        .style-minimal .page-header { top: 5mm; }
-        .style-clean   .page-header { top: 10mm; }
-
-        .content-body {
-            position: absolute; top: 42mm; bottom: 25mm; left: 35mm; right: 35mm;
-            overflow: hidden; z-index: 2; line-height: 2.2; font-family: 'Amiri', serif;
-        }
-        .cover-page .content-body {
-            top: 0; bottom: 0; left: 0; right: 0;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center; text-align: center;
-        }
-        .cover-page { background-size: cover; background-position: center; }
-
-        /* فهرس المحتويات */
-        .toc-title {
-            font-family: 'Aref Ruqaa', serif; font-size: 26pt; text-align: center;
-            color: #4a3f35; margin-bottom: 12mm; border-bottom: 2px solid #b8860b; padding-bottom: 4mm;
-        }
-        .toc-item {
-            display: flex; justify-content: space-between; align-items: baseline;
-            border-bottom: 1px dotted #ccc; padding: 3mm 0; font-family: 'Amiri', serif;
-        }
-        .toc-text { font-size: 15pt; color: #333; }
-        .toc-page { font-size: 12pt; color: #888; }
-
-        /* حواشي */
-        .footnotes-section {
-            position: absolute; bottom: 8mm; left: 35mm; right: 35mm;
-            border-top: 1px solid #ccc; padding-top: 4px;
-            font-size: 10pt; color: #666; font-family: 'Amiri', serif; z-index: 5;
+            color: #333;
         }
 
         @keyframes slideUp {
@@ -530,6 +506,57 @@
             font-size: 20px;
             color: #999;
         }
+        /* ══ صفحات الكتاب — مطابقة لـ editor.html ══ */
+        .page-wrapper {
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+        }
+        .page-header {
+            position: absolute; width: 100%;
+            display: flex; justify-content: space-between;
+            padding: 0 35mm; font-size: 14pt; color: #4a3f35;
+            font-family: 'Amiri', serif; font-weight: bold; z-index: 10;
+        }
+        .style-islamic .page-header { top: 6mm; }
+        .style-classic .page-header { top: 5mm; }
+        .style-floral  .page-header { top: 7mm; }
+        .style-royal   .page-header { top: 8mm; }
+        .style-minimal .page-header { top: 5mm; }
+        .style-clean   .page-header { top: 10mm; }
+
+        .content-body {
+            position: absolute; top: 42mm; bottom: 25mm; left: 35mm; right: 35mm;
+            overflow: hidden; z-index: 2; line-height: 2.2; font-family: 'Amiri', serif;
+        }
+        .cover-page .content-body {
+            top: 0; bottom: 0; left: 0; right: 0;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+        }
+        .cover-page { background-size: cover; background-position: center; }
+
+        /* فهرس المحتويات */
+        .toc-title {
+            font-family: 'Aref Ruqaa', serif; font-size: 26pt; text-align: center;
+            color: #4a3f35; margin-bottom: 12mm; border-bottom: 2px solid #b8860b; padding-bottom: 4mm;
+        }
+        .toc-item {
+            display: flex; justify-content: space-between; align-items: baseline;
+            border-bottom: 1px dotted #ccc; padding: 3mm 0; font-family: 'Amiri', serif;
+        }
+        .toc-text { font-size: 15pt; color: #333; }
+        .toc-page { font-size: 12pt; color: #888; }
+
+        /* حواشي */
+        .footnotes-section {
+            position: absolute; bottom: 8mm; left: 35mm; right: 35mm;
+            border-top: 1px solid #ccc; padding-top: 4px;
+            font-size: 10pt; color: #666; font-family: 'Amiri', serif; z-index: 5;
+        }
+
         /* إدارة التصنيفات */
         .cat-edit-row {
             display: flex;
@@ -745,6 +772,16 @@
 
                     <button class="btn-danger" style="background:#fff1f1; color:#d32f2f; border-color:#ffcdd2;" onclick="requestDeleteBook()"><span>🗑️</span> حذف الكتاب نهائياً</button>
                 </div>
+
+                <!-- أزرار الحفظ والإلغاء -->
+                <div id="modalSaveBar" style="margin-top:16px;padding-top:14px;border-top:1px solid #e0e0e0;display:flex;gap:10px;justify-content:center;">
+                    <button id="modalSaveBtn" onclick="saveBookFromModal()" style="flex:1;padding:11px 0;background:var(--royal-green);color:#fff;border:none;border-radius:8px;font-family:'Amiri',serif;font-size:14pt;cursor:pointer;transition:0.2s;">
+                        <span id="modalSaveBtnIcon">☁️</span> <span id="modalSaveBtnText">حفظ في درايف</span>
+                    </button>
+                    <button onclick="cancelBookModal()" style="flex:1;padding:11px 0;background:#f5f5f5;color:#555;border:1px solid #ccc;border-radius:8px;font-family:'Amiri',serif;font-size:14pt;cursor:pointer;transition:0.2s;">
+                        ✖ إلغاء
+                    </button>
+                </div>
             </div>
 
             <div id="modalPreview" class="modal-preview-side">
@@ -792,6 +829,12 @@
     let customCardImage = null; // للاحتفاظ بالصورة المشفرة مؤقتاً
     let currentInputType = null; // لنوافذ تعديل العنوان والاقتباس
     let tempImageBase64 = null;  // لتخزين صور Base64 مؤقتاً
+
+    // متغيرات نظام المعاينة المتطور
+    let _pvBook  = null;
+    let _pvVault = {};
+    let _pvScale = 1;
+    let _modalBookSnapshot = null;
 
     // حقن CSS من RoyalFeatures (plugins.js)
     function injectPluginStyles() {
@@ -1200,6 +1243,7 @@ function saveData() {
 
             const card = document.createElement('div');
             card.className = 'book-card';
+            card.dataset.bookId = book.id;
             card.innerHTML = `
                 <div class="card-header" onclick="event.stopPropagation()">
                     <div class="card-title" title="${book.title || 'بدون عنوان'}">${applyRoyalStyles(book.title || 'بدون عنوان')}</div>
@@ -1337,11 +1381,50 @@ function saveData() {
         window.location.href = 'offline-setup.html';
     }
 
-    function confirmManualSync() {
-        if (confirm("هل أنت متأكد من المزامنة؟ سيتم نقل التغيرات للسحابة والعكس.")) {
-            if(typeof startSyncProcess === 'function') startSyncProcess();
+    async function confirmManualSync() {
+        if (typeof currentUser === 'undefined' || !currentUser || currentUser.role !== 'member') {
+            alert('يجب تسجيل الدخول أولاً لاستخدام المزامنة.');
+            return;
         }
-        toggleFabModal();
+        if (!navigator.onLine) {
+            alert('لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك والمحاولة مرة أخرى.');
+            return;
+        }
+        if (!confirm('سيتم مزامنة مكتبتك المحلية مع السحابة. الأحدث تعديلاً هو الذي يُحفظ. هل تريد المتابعة؟')) return;
+
+        const syncBtn = document.getElementById('syncButtonId');
+        const origHTML = syncBtn.innerHTML;
+        syncBtn.innerHTML = '<span>⏳</span> &nbsp; جاري المزامنة...';
+        syncBtn.style.pointerEvents = 'none';
+
+        try {
+            const localBooks = JSON.parse(localStorage.getItem('royal_books_list') || '[]');
+            const res = await fetch(AUTH_CONFIG.SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'sync_library',
+                    userId: currentUser.id,
+                    userName: currentUser.username,
+                    localBooks: localBooks
+                })
+            });
+            const result = await res.json();
+            if (result.success && Array.isArray(result.mergedBooks)) {
+                books = result.mergedBooks;
+                localStorage.setItem('royal_books_list', JSON.stringify(books));
+                renderBooks();
+                updateMainBtnText();
+                localStorage.removeItem('pending_sync_book');
+                syncBtn.innerHTML = '<span>✅</span> &nbsp; تمت المزامنة بنجاح';
+                setTimeout(() => { syncBtn.innerHTML = origHTML; syncBtn.style.pointerEvents = ''; toggleFabModal(); }, 1500);
+            } else {
+                throw new Error(result.message || 'فشلت المزامنة');
+            }
+        } catch(e) {
+            syncBtn.innerHTML = origHTML;
+            syncBtn.style.pointerEvents = '';
+            alert('حدث خطأ أثناء المزامنة: ' + e.message);
+        }
     }
 
     if ('serviceWorker' in navigator) {
@@ -1355,32 +1438,48 @@ function saveData() {
     function updateSyncButtonVisibility() {
         const syncBtn = document.getElementById('syncButtonId');
         if (!syncBtn) return;
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        syncBtn.style.display = isStandalone ? 'flex' : 'none';
+        const show = typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'member';
+        syncBtn.style.display = show ? 'flex' : 'none';
     }
 
 // ══════════════════════════════════════════════════════════════
-// نظام المعاينة الملكي — السحب العمودي مع بناء الصفحات الحقيقي
+// محرك المعاينة الملكي المتطور — السحب العمودي مع تطبيق كامل للميزات
 // ══════════════════════════════════════════════════════════════
-let _pvBook  = null;
-let _pvVault = {};
-let _pvScale = 1;
 
+/* ─── فتح النافذة ─── */
 function openBookPreview(bookId) {
     currentActionBookId = bookId;
     const book = books.find(b => b.id === bookId);
     if (!book) return;
     _pvBook = book;
 
-    document.getElementById('modalBookTitle').innerHTML = applyRoyalStyles(book.title || 'كتاب بدون عنوان');
+    // نسخة احتياطية لدعم زر الإلغاء
+    _modalBookSnapshot = JSON.parse(JSON.stringify(book));
+
+    // نص زر الحفظ حسب حالة الاتصال
+    const saveIcon = document.getElementById('modalSaveBtnIcon');
+    const saveText = document.getElementById('modalSaveBtnText');
+    if (navigator.onLine) {
+        if (saveIcon) saveIcon.textContent = '☁️';
+        if (saveText) saveText.textContent = 'حفظ في درايف';
+    } else {
+        if (saveIcon) saveIcon.textContent = '💾';
+        if (saveText) saveText.textContent = 'حفظ محلي';
+    }
+
+    document.getElementById('modalBookTitle').innerHTML =
+        applyRoyalStyles(book.title || 'كتاب بدون عنوان');
     const qEl = document.getElementById('modalBookQuote');
-    if (qEl) qEl.innerHTML = book.quote ? applyRoyalStyles(`" ${book.quote} "`) : 'لم يتم وضع اقتباس مميز بعد.';
+    if (qEl) qEl.innerHTML = book.quote
+        ? applyRoyalStyles(`" ${book.quote} "`)
+        : 'لم يتم وضع اقتباس مميز بعد.';
 
     updateFavBtn(book);
     document.getElementById('bookModal').style.display = 'flex';
     _pvLoadVault(book);
 }
 
+/* ─── قراءة IndexedDB ─── */
 function _pvLoadVault(book) {
     try {
         const r = indexedDB.open('RoyalBookDB', 1);
@@ -1398,6 +1497,7 @@ function _pvLoadVault(book) {
     } catch(_) { _pvVault = {}; _pvBuild(book); }
 }
 
+/* ─── CSS من RoyalFeatures ─── */
 function _pvPluginCSS() {
     if (typeof RoyalFeatures === 'undefined') return '';
     let css = '';
@@ -1406,22 +1506,25 @@ function _pvPluginCSS() {
     return css ? `<style>${css}</style>` : '';
 }
 
+/* ─── تطبيق الميزات على النص (مطابق تماماً لـ editor.html) ─── */
 function _pvApply(text, fnList) {
     if (!text) return '';
     let r = text;
     if (typeof RoyalFeatures !== 'undefined')
         for (const f in RoyalFeatures)
             r = RoyalFeatures[f].execute(r, fnList || []);
+    // وسائط
     r = r.replace(/\{وسائط:\s*(.*?)\}/g, (_, k) => {
         const m = _pvVault[k.trim()];
         if (!m) return `<span style="color:red;font-size:9pt">[وسائط: ${k}]</span>`;
         if (m.type === 'image')
             return `<img src="${m.data}" style="max-width:100%;border-radius:5px;display:block;margin:5px auto">`;
-        return `<div style="text-align:center;padding:4px;border:1px dashed #ccc;font-size:9pt;color:#666">${m.type==='video'?'🎥':'🎵'} ${k}</div>`;
+        return `<div style="text-align:center;padding:4px;border:1px dashed #ccc;font-size:9pt;color:#666">${m.type === 'video' ? '🎥' : '🎵'} ${k}</div>`;
     });
     return r;
 }
 
+/* ─── بناء الصفحات (مطابق لـ buildBook في editor.html) ─── */
 function _pvBuild(book) {
     const style  = book.style  || 'style-islamic';
     const fs     = (book.size  || 20) + 'pt';
@@ -1431,28 +1534,40 @@ function _pvBuild(book) {
     const title  = _pvApply(book.title  || '', []);
     const author = _pvApply(book.author || '', []);
     const date   = book.date || '';
-    const pages  = [];
 
-    // صفحة الغلاف
+    const pages = [];
+
+    /* ── صفحة الغلاف ── */
     const coverBg = book.cover
         ? `background-image:url('${book.cover}');background-size:cover;background-position:center`
         : `background-color:${bg}`;
 
     pages.push({ html: `
-        <div class="page-wrapper ${style} cover-page" style="background-color:${bg};${coverBg}">
+        <div class="page-wrapper ${style} cover-page"
+             style="background-color:${bg};${coverBg}">
           ${css}
           <div class="content-body">
             <div style="width:100%;margin-top:-40mm;text-align:center">
-              <div style="font-size:55pt;font-family:'Aref Ruqaa',serif;margin-bottom:25mm;line-height:1.1;color:#2c1810">${title}</div>
-              <div style="font-size:30pt;font-family:'Amiri',serif;margin-bottom:15px;color:#4a3f35">${author}</div>
-              <div style="font-size:20pt;font-family:'Amiri',serif;color:#777">${date}</div>
+              <div style="font-size:55pt;font-family:'Aref Ruqaa',serif;
+                          margin-bottom:25mm;line-height:1.1;color:#2c1810">
+                ${title}
+              </div>
+              <div style="font-size:30pt;font-family:'Amiri',serif;
+                          margin-bottom:15px;color:#4a3f35">
+                ${author}
+              </div>
+              <div style="font-size:20pt;font-family:'Amiri',serif;color:#777">
+                ${date}
+              </div>
             </div>
           </div>
-        </div>` });
+        </div>
+    `, bg: null });
 
-    // صفحات المحتوى
+    /* ── صفحات المحتوى ── */
     const rawText = book.text || book.t || '';
     const lines   = rawText.split('\n');
+
     let currentBody  = null;
     let chapterCount = 0;
     const tocItems   = [];
@@ -1464,14 +1579,19 @@ function _pvBuild(book) {
     };
 
     const pageToHTML = (pg) => {
-        const headerHTML = pg.header ? `<div class="page-header"><span>${title}</span><span>${date}</span></div>` : '';
-        const fnsHTML = pg.fns.length
-            ? `<div class="footnotes-section">${pg.fns.map((f,i)=>`<div>[${i+1}] ${_pvApply(f,[])}</div>`).join('')}</div>` : '';
-        return `<div class="page-wrapper ${style}" style="background-color:${bg}">
-          ${css}${headerHTML}
-          <div class="content-body" style="font-size:${fs}">${pg.items.join('')}</div>
-          ${fnsHTML}
-        </div>`;
+        const headerHTML = pg.header
+            ? `<div class="page-header"><span>${title}</span><span>${date}</span></div>` : '';
+        const bodyHTML = pg.items.join('');
+        const fnsHTML  = pg.fns.length
+            ? `<div class="footnotes-section">${pg.fns.map((f, i) => `<div>[${i+1}] ${_pvApply(f,[])}</div>`).join('')}</div>` : '';
+        return `
+          <div class="page-wrapper ${style}" style="background-color:${bg}">
+            ${css}${headerHTML}
+            <div class="content-body" style="font-size:${fs}">
+              ${bodyHTML}
+            </div>
+            ${fnsHTML}
+          </div>`;
     };
 
     currentBody = makePage(true);
@@ -1482,48 +1602,68 @@ function _pvBuild(book) {
             chapterCount++;
             const hText = line.replace('# ', '').trim();
             tocItems.push({ title: hText, ch: chapterCount });
-            currentBody.items.push(`<h1 id="chapter-${chapterCount}" style="text-align:center;font-family:'Aref Ruqaa',serif;margin-bottom:10mm;font-size:${fs}">${_pvApply(hText,[])}</h1>`);
+            currentBody.items.push(
+                `<h1 id="chapter-${chapterCount}"
+                     style="text-align:center;font-family:'Aref Ruqaa',serif;
+                            margin-bottom:10mm;font-size:${fs}">
+                   ${_pvApply(hText, [])}
+                 </h1>`
+            );
         } else {
-            currentBody.items.push(line.trim() === ''
+            const html = line.trim() === ''
                 ? '<div style="margin-bottom:4px">&nbsp;</div>'
-                : `<div style="white-space:pre-wrap;margin-bottom:4px;font-size:${fs}">${_pvApply(line, currentBody.fns)}</div>`);
+                : `<div style="white-space:pre-wrap;margin-bottom:4px;font-size:${fs}">${_pvApply(line, currentBody.fns)}</div>`;
+            currentBody.items.push(html);
         }
     });
 
+    /* تحويل كائنات الصفحات إلى HTML */
     for (let i = 1; i < pages.length; i++) {
         if (pages[i].html) continue;
         pages[i].html = pageToHTML(pages[i]);
     }
 
-    // صفحة الفهرس
+    /* صفحة الفهرس */
     if (tocItems.length > 0) {
         const rows = tocItems.map(t =>
-            `<div class="toc-item"><span class="toc-text">${_pvApply(t.title,[])}</span><span class="toc-page">الفصل ${t.ch}</span></div>`
+            `<div class="toc-item">
+               <span class="toc-text">${_pvApply(t.title, [])}</span>
+               <span class="toc-page">الفصل ${t.ch}</span>
+             </div>`
         ).join('');
         pages.push({ html: `
-            <div class="page-wrapper ${style}" style="background-color:${bg}">
-              ${css}
-              <div class="page-header"><span>${title}</span><span>${date}</span></div>
-              <div class="content-body" style="font-size:${fs}">
-                <div class="toc-title">فهرس المحتويات</div>${rows}
-              </div>
-            </div>` });
+          <div class="page-wrapper ${style}" style="background-color:${bg}">
+            ${css}
+            <div class="page-header"><span>${title}</span><span>${date}</span></div>
+            <div class="content-body" style="font-size:${fs}">
+              <div class="toc-title">فهرس المحتويات</div>${rows}
+            </div>
+          </div>
+        `});
     }
 
     _pvRender(pages, bgs);
 }
 
+/* ─── عرض الصفحات بالسحب العمودي ─── */
 function _pvRender(pages, bgs) {
     const side = document.getElementById('modalPreview');
     if (!side) return;
 
     _pvCalcScale(side);
 
+    const pagesHTML = pages.map((pg, i) =>
+        `<div class="preview-page-wrapper" data-page="${i+1}">${pg.html}</div>`
+    ).join('');
+
     side.innerHTML = `
-        <div class="preview-page-counter" id="pvCounter">صفحة 1 من ${pages.length}</div>
-        ${pages.map((pg,i) => `<div class="preview-page-wrapper" data-page="${i+1}">${pg.html}</div>`).join('')}
+        <div class="preview-page-counter" id="pvCounter">
+          صفحة 1 من ${pages.length}
+        </div>
+        ${pagesHTML}
     `;
 
+    /* تطبيق الخلفيات المخصصة */
     Object.keys(bgs).forEach(num => {
         const wrapper = side.querySelector(`[data-page="${num}"]`);
         if (!wrapper) return;
@@ -1543,42 +1683,56 @@ function _pvRender(pages, bgs) {
     window.addEventListener('resize', window._pvResizeH);
 }
 
+/* ─── حساب نسبة التصغير ─── */
 function _pvCalcScale(side) {
+    const PAGE_W = 945;
+    const PAGE_H = 1334;
     const avW = (side.offsetWidth  || 600) - 40;
     const avH = (side.offsetHeight || 700) - 80;
-    _pvScale = Math.min(avW / 945, avH / 1334, 1);
+    _pvScale = Math.min(avW / PAGE_W, avH / PAGE_H, 1);
 }
 
+/* ─── تطبيق الـ scale على كل صفحة ─── */
 function _pvApplyScale(side) {
-    const scaledH = Math.ceil(1334 * _pvScale);
+    const PAGE_W = 945;
+    const PAGE_H = 1334;
+    const scaledH = Math.ceil(PAGE_H * _pvScale);
+
     side.querySelectorAll('.page-wrapper').forEach(pw => {
-        pw.style.width           = '945px';
-        pw.style.height          = '1334px';
+        pw.style.width           = PAGE_W + 'px';
+        pw.style.height          = PAGE_H + 'px';
         pw.style.transform       = `scale(${_pvScale})`;
         pw.style.transformOrigin = 'top center';
     });
+
     side.querySelectorAll('.preview-page-wrapper').forEach(pw => {
         pw.style.height = (scaledH + 15) + 'px';
     });
 }
 
+/* ─── مراقبة الصفحة المرئية (IntersectionObserver) ─── */
 function _pvObserve(side, total) {
     const counter = document.getElementById('pvCounter');
     if (!counter || !('IntersectionObserver' in window)) return;
+
     const obs = new IntersectionObserver(entries => {
         let best = null, bestRatio = 0;
-        entries.forEach(e => { if (e.intersectionRatio > bestRatio) { bestRatio = e.intersectionRatio; best = e.target; } });
+        entries.forEach(e => {
+            if (e.intersectionRatio > bestRatio) { bestRatio = e.intersectionRatio; best = e.target; }
+        });
         if (best) counter.textContent = `صفحة ${best.dataset.page || '?'} من ${total}`;
     }, { root: side, threshold: [0.1, 0.5, 0.9] });
+
     side.querySelectorAll('.preview-page-wrapper').forEach(el => obs.observe(el));
 }
 
 
     function closeModalOutside(event) {
-        if (event.target.id === 'bookModal') {
+        if(event.target.id === 'bookModal') {
             document.getElementById('bookModal').style.display = 'none';
             hideImageInput();
             _pvBook = null;
+            _modalBookSnapshot = null;
             if (window._pvResizeH) window.removeEventListener('resize', window._pvResizeH);
         }
     }
@@ -1732,110 +1886,60 @@ function _pvObserve(side, total) {
         }
     }
 
-    // توليد صورة بطاقة الكتاب من الغلاف الحقيقي
-    function _pvLoadScript(url, cb) {
-        if (document.querySelector(`script[src="${url}"]`)) { cb(); return; }
-        const s = document.createElement('script');
-        s.src = url; s.onload = cb; s.onerror = cb;
-        document.head.appendChild(s);
-    }
+    // 3. دالة توليد صورة البطاقة المطابقة للغلاف
+function setCoverFromBookData() {
+    const book = books.find(b => b.id === currentActionBookId);
+    const canvas = document.createElement('canvas');
+    canvas.width = 400; canvas.height = 600;
+    const ctx = canvas.getContext('2d');
 
-    function _pvLoadVaultForCover(book, callback) {
-        try {
-            const r = indexedDB.open('RoyalBookDB', 1);
-            r.onsuccess = e => {
-                try {
-                    const g = e.target.result.transaction('mediaVaultStore','readonly').objectStore('mediaVaultStore').get('currentVault');
-                    g.onsuccess = () => callback(g.result || {});
-                    g.onerror   = () => callback({});
-                } catch(_) { callback({}); }
-            };
-            r.onerror = () => callback({});
-        } catch(_) { callback({}); }
-    }
+    // محاكاة نمط الغلاف (Style)
+    const bgColor = book.settings?.pageColor || '#fdfaf0';
+    const textColor = book.settings?.textColor || '#2c3e50';
 
-    function _pvRenderCoverToCanvas(book, vault, callback) {
-        const PAGE_W = 945, PAGE_H = 1334;
-        const style = book.style || 'style-islamic';
-        const bg    = book.color || '#FFFDD0';
-        let dynCSS  = '';
-        if (typeof RoyalFeatures !== 'undefined')
-            for (const f in RoyalFeatures)
-                if (RoyalFeatures[f].css) dynCSS += RoyalFeatures[f].css + '\n';
+    // رسم الخلفية
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const applyF = t => {
-            if (!t) return '';
-            let r = t;
-            if (typeof RoyalFeatures !== 'undefined')
-                for (const f in RoyalFeatures) r = RoyalFeatures[f].execute(r, []);
-            return r;
+    // إذا كان هناك صورة غلاف أصلية، نرسمها كخلفية مصغرة
+    if (book.cCoverImg) {
+        const img = new Image();
+        img.onload = function() {
+            ctx.globalAlpha = 0.3; // جعلها شفافة قليلاً خلف النصوص
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = 1.0;
+            drawText();
         };
-
-        const coverBg = book.cover
-            ? `background-image:url('${book.cover}');background-size:cover;background-position:center`
-            : `background-color:${bg}`;
-
-        const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
-        <style>
-          @font-face{font-family:'Amiri';src:url('fonts/Amiri-Regular.ttf')format('truetype')}
-          @font-face{font-family:'Aref Ruqaa';src:url('fonts/ArefRuqaa-Bold.ttf')format('truetype');font-weight:bold}
-          *{margin:0;padding:0;box-sizing:border-box}
-          body{width:${PAGE_W}px;height:${PAGE_H}px;overflow:hidden;background:transparent}
-          .page-wrapper{width:${PAGE_W}px;height:${PAGE_H}px;position:relative;overflow:hidden;${coverBg};background-color:${bg}}
-          .content-body{position:absolute;top:0;bottom:0;left:0;right:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-          ${dynCSS}
-        </style></head><body>
-        <div class="page-wrapper ${style}">
-          <div class="content-body">
-            <div style="width:100%;margin-top:-40mm;text-align:center">
-              <div style="font-size:55pt;font-family:'Aref Ruqaa',serif;margin-bottom:25mm;line-height:1.1;color:#2c1810">${applyF(book.title||'')}</div>
-              <div style="font-size:30pt;font-family:'Amiri',serif;margin-bottom:15px;color:#4a3f35">${applyF(book.author||'')}</div>
-              <div style="font-size:20pt;font-family:'Amiri',serif;color:#777">${book.date||''}</div>
-            </div>
-          </div>
-        </div></body></html>`;
-
-        const iframe = document.createElement('iframe');
-        iframe.style.cssText = `position:fixed;left:-9999px;top:-9999px;width:${PAGE_W}px;height:${PAGE_H}px;border:none;opacity:0;pointer-events:none;z-index:-1`;
-        document.body.appendChild(iframe);
-        iframe.onload = () => {
-            _pvLoadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', () => {
-                const target = iframe.contentDocument.querySelector('.page-wrapper');
-                html2canvas(target, { width: PAGE_W, height: PAGE_H, scale: 0.35, useCORS: true, allowTaint: true, logging: false, backgroundColor: bg })
-                    .then(canvas => { document.body.removeChild(iframe); callback(canvas.toDataURL('image/jpeg', 0.85)); })
-                    .catch(() => { document.body.removeChild(iframe); callback(null); });
-            });
-        };
-        iframe.src = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+        img.src = book.cCoverImg;
+    } else {
+        drawText();
     }
+    function drawText() {
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'center';
+        
+        // العنوان (بخط عريض)
+        ctx.font = 'bold 32px Arial';
+        ctx.fillText(book.title || 'بدون عنوان', canvas.width/2, 200);
+        
+        // المؤلف
+        ctx.font = '22px Arial';
+        ctx.fillText(book.author || '', canvas.width/2, 260);
+        
+        // التاريخ في الأسفل
+        ctx.font = '16px Arial';
+        ctx.fillText(book.date || '', canvas.width/2, 550);
 
-    function generateCoverFromBook() {
-        const book = books.find(b => b.id === currentActionBookId);
-        if (!book) return;
-        const btn = event?.currentTarget || event?.target;
-        if (btn) { btn.textContent = '⏳ جاري التوليد...'; btn.disabled = true; }
+        // إطار ملكي ذهبي
+        ctx.strokeStyle = '#b8860b';
+        ctx.lineWidth = 8;
+        ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
 
-        _pvLoadVaultForCover(book, vault => {
-            _pvVault = vault;
-            _pvRenderCoverToCanvas(book, vault, dataURL => {
-                if (!dataURL) {
-                    alert('تعذّر توليد الصورة.');
-                    if (btn) { btn.textContent = 'توليد من بيانات الكتاب (آلي)'; btn.disabled = false; }
-                    return;
-                }
-                book.cardImage = dataURL;
-                book.updatedAt = Date.now();
-                saveData();
-                renderBooks();
-                if (btn) {
-                    btn.textContent = '✅ تم التوليد!'; btn.disabled = false;
-                    setTimeout(() => { btn.textContent = 'توليد من بيانات الكتاب (آلي)'; }, 2000);
-                }
-                const opts = document.getElementById('cardImageOptions');
-                if (opts) opts.style.display = 'none';
-            });
-        });
+        book.coverImage = canvas.toDataURL('image/jpeg', 0.8);
+        book.autoCardImage = true; // علامة ليعرف النظام أنها تلقائية
+        finalizeImageUpdate();
     }
+}
 
 
     function finalizeImageUpdate() {
@@ -1845,6 +1949,269 @@ function _pvObserve(side, total) {
         alert("تم تحديث صورة بطاقة الكتاب بنجاح.");
         document.getElementById('bookModal').style.display = 'none';
     }
+
+// ══════════════════════════════════════════════════════════════
+// حفظ بيانات الكتاب من داخل النافذة (درايف أو محلي)
+// ══════════════════════════════════════════════════════════════
+async function saveBookFromModal() {
+    const book = books.find(b => b.id === currentActionBookId);
+    if (!book) return;
+    const btn = document.getElementById('modalSaveBtn');
+    const origHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ جاري الحفظ...';
+
+    book.updatedAt = Date.now();
+    saveData();
+    renderBooks();
+
+    if (navigator.onLine && typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'member') {
+        try {
+            const res = await fetch(AUTH_CONFIG.SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'save_book',
+                    userId: currentUser.id,
+                    userName: currentUser.username,
+                    bookId: book.id,
+                    bookData: book,
+                    categoryName: (book.categoryIds && book.categoryIds.length > 0)
+                        ? (categories.find(c => c.id === book.categoryIds[0])?.name || 'عام')
+                        : 'عام'
+                })
+            });
+            const result = await res.json();
+            if (result.success) {
+                _modalBookSnapshot = JSON.parse(JSON.stringify(book));
+                btn.innerHTML = '✅ تم الحفظ';
+                setTimeout(() => { btn.disabled = false; btn.innerHTML = origHTML; document.getElementById('bookModal').style.display = 'none'; }, 1000);
+                return;
+            }
+            throw new Error(result.message || 'فشل الحفظ');
+        } catch(e) {
+            localStorage.setItem('pending_sync_book', JSON.stringify(book));
+        }
+    } else {
+        localStorage.setItem('pending_sync_book', JSON.stringify(book));
+    }
+
+    _modalBookSnapshot = JSON.parse(JSON.stringify(book));
+    btn.innerHTML = '💾 محفوظ محلياً';
+    setTimeout(() => { btn.disabled = false; btn.innerHTML = origHTML; document.getElementById('bookModal').style.display = 'none'; }, 1000);
+}
+
+// ══════════════════════════════════════════════════════════════
+// إلغاء: استعادة بيانات الكتاب كما كانت عند فتح النافذة
+// ══════════════════════════════════════════════════════════════
+function cancelBookModal() {
+    if (_modalBookSnapshot) {
+        const idx = books.findIndex(b => b.id === _modalBookSnapshot.id);
+        if (idx !== -1) {
+            books[idx] = JSON.parse(JSON.stringify(_modalBookSnapshot));
+            localStorage.setItem('royal_books_list', JSON.stringify(books));
+            renderBooks();
+        }
+    }
+    hideImageInput();
+    document.getElementById('bookModal').style.display = 'none';
+    _pvBook = null;
+    _modalBookSnapshot = null;
+    if (window._pvResizeH) window.removeEventListener('resize', window._pvResizeH);
+}
+
+// ══════════════════════════════════════════════════════════════
+// تُستدعى من editor.html عند حفظ الكتاب للتزامن مع index.html
+// ══════════════════════════════════════════════════════════════
+function updateGlobalBooksList(book) {
+    const idx = books.findIndex(b => b.id === book.id);
+    if (idx !== -1) {
+        const preserved = {
+            cardImage:        books[idx].cardImage,
+            cardImageManual:  books[idx].cardImageManual,
+            _cardFingerprint: books[idx]._cardFingerprint
+        };
+        books[idx] = { ...books[idx], ...book, ...preserved };
+        autoGenerateCardImage(books[idx]);
+    } else {
+        books.push(book);
+        autoGenerateCardImage(book);
+    }
+    saveData();
+    renderBooks();
+}
+
+// ══════════════════════════════════════════════════════════════
+// ② توليد صورة بطاقة الكتاب آلياً من الغلاف الحقيقي
+// ══════════════════════════════════════════════════════════════
+
+/* ─── قراءة الخزنة لتوليد الغلاف ─── */
+function _pvLoadVaultForCover(book, callback) {
+    try {
+        const r = indexedDB.open('RoyalBookDB', 1);
+        r.onsuccess = e => {
+            try {
+                const g = e.target.result
+                    .transaction('mediaVaultStore', 'readonly')
+                    .objectStore('mediaVaultStore')
+                    .get('currentVault');
+                g.onsuccess = () => callback(g.result || {});
+                g.onerror   = () => callback({});
+            } catch(_) { callback({}); }
+        };
+        r.onerror = () => callback({});
+    } catch(_) { callback({}); }
+}
+
+/* ─── الدالة اليدوية: زر "توليد من بيانات الكتاب (آلي)" ─── */
+function generateCoverFromBook() {
+    const book = books.find(b => b.id === currentActionBookId);
+    if (!book) return;
+
+    const btn = event?.currentTarget || event?.target;
+    if (btn) { btn.textContent = '⏳ جاري التوليد...'; btn.disabled = true; }
+
+    _pvLoadVaultForCover(book, (vault) => {
+        _pvVault = vault;
+        _pvRenderCoverToCanvas(book, vault, (dataURL) => {
+            if (!dataURL) {
+                alert('تعذّر توليد الصورة، تأكد من صلاحية بيانات الكتاب.');
+                if (btn) { btn.textContent = 'توليد من بيانات الكتاب (آلي)'; btn.disabled = false; }
+                return;
+            }
+            book.cardImage = dataURL;
+            book.updatedAt = Date.now();
+            saveData();
+            renderBooks();
+
+            if (btn) {
+                btn.textContent = '✅ تم التوليد!'; btn.disabled = false;
+                setTimeout(() => { btn.textContent = 'توليد من بيانات الكتاب (آلي)'; }, 2000);
+            }
+            const opts = document.getElementById('cardImageOptions');
+            if (opts) opts.style.display = 'none';
+        });
+    });
+}
+
+/* ─── التوليد التلقائي عند تحديث بيانات الكتاب ─── */
+function autoGenerateCardImage(book) {
+    if (book.cardImageManual) return;
+
+    const fingerprint = [book.title, book.author, book.date, book.color, book.style, book.cover].join('|');
+    if (book._cardFingerprint === fingerprint) return;
+
+    book._cardFingerprint = fingerprint;
+
+    _pvLoadVaultForCover(book, (vault) => {
+        _pvVault = vault;
+        _pvRenderCoverToCanvas(book, vault, (dataURL) => {
+            if (!dataURL) return;
+            book.cardImage = dataURL;
+            localStorage.setItem('royal_books_list', JSON.stringify(
+                books.map(b => b.id === book.id ? book : b)
+            ));
+            const cardEl = document.querySelector(`.book-card[data-book-id="${book.id}"] .card-cover`);
+            if (cardEl) cardEl.style.backgroundImage = `url('${dataURL}')`;
+        });
+    });
+}
+
+/* ─── إنشاء canvas من HTML الغلاف ─── */
+function _pvRenderCoverToCanvas(book, vault, callback) {
+    const PAGE_W = 945;
+    const PAGE_H = 1334;
+    const style  = book.style || 'style-islamic';
+    const bg     = book.color || '#FFFDD0';
+
+    let dynCSS = '';
+    if (typeof RoyalFeatures !== 'undefined')
+        for (const f in RoyalFeatures)
+            if (RoyalFeatures[f].css) dynCSS += RoyalFeatures[f].css + '\n';
+
+    function applyF(t) {
+        if (!t) return '';
+        let r = t;
+        if (typeof RoyalFeatures !== 'undefined')
+            for (const f in RoyalFeatures) r = RoyalFeatures[f].execute(r, []);
+        return r;
+    }
+
+    const coverBg = book.cover
+        ? `background-image:url('${book.cover}');background-size:cover;background-position:center`
+        : `background-color:${bg}`;
+
+    const coverHTML = `
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            @font-face{font-family:'Amiri';src:url('fonts/Amiri-Regular.ttf')format('truetype')}
+            @font-face{font-family:'Aref Ruqaa';src:url('fonts/ArefRuqaa-Bold.ttf')format('truetype')}
+            *{margin:0;padding:0;box-sizing:border-box}
+            body{width:${PAGE_W}px;height:${PAGE_H}px;overflow:hidden;background:transparent}
+            .page-wrapper{width:${PAGE_W}px;height:${PAGE_H}px;position:relative;overflow:hidden;${coverBg};background-color:${bg}}
+            .content-body{position:absolute;top:0;bottom:0;left:0;right:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+            ${dynCSS}
+          </style>
+        </head>
+        <body>
+          <div class="page-wrapper ${style}">
+            <div class="content-body">
+              <div style="width:100%;margin-top:-40mm;text-align:center">
+                <div style="font-size:55pt;font-family:'Aref Ruqaa',serif;margin-bottom:25mm;line-height:1.1;color:#2c1810">
+                  ${applyF(book.title || '')}
+                </div>
+                <div style="font-size:30pt;font-family:'Amiri',serif;margin-bottom:15px;color:#4a3f35">
+                  ${applyF(book.author || '')}
+                </div>
+                <div style="font-size:20pt;font-family:'Amiri',serif;color:#777">
+                  ${book.date || ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+    `;
+
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = `position:fixed;left:-9999px;top:-9999px;width:${PAGE_W}px;height:${PAGE_H}px;border:none;opacity:0;pointer-events:none;z-index:-1`;
+    document.body.appendChild(iframe);
+
+    iframe.onload = () => {
+        _pvLoadScript(
+            'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+            () => {
+                const target = iframe.contentDocument.querySelector('.page-wrapper');
+                html2canvas(target, {
+                    width: PAGE_W, height: PAGE_H,
+                    scale: 0.35, useCORS: true, allowTaint: true,
+                    logging: false, backgroundColor: bg
+                }).then(canvas => {
+                    const dataURL = canvas.toDataURL('image/jpeg', 0.85);
+                    document.body.removeChild(iframe);
+                    callback(dataURL);
+                }).catch(err => {
+                    console.warn('html2canvas error:', err);
+                    document.body.removeChild(iframe);
+                    callback(null);
+                });
+            }
+        );
+    };
+
+    const blob = new Blob([coverHTML], { type: 'text/html;charset=utf-8' });
+    iframe.src = URL.createObjectURL(blob);
+}
+
+/* ─── تحميل سكريبت خارجي إذا لم يكن موجوداً ─── */
+function _pvLoadScript(url, cb) {
+    if (document.querySelector(`script[src="${url}"]`)) { cb(); return; }
+    const s = document.createElement('script');
+    s.src = url; s.onload = cb; s.onerror = cb;
+    document.head.appendChild(s);
+}
 
     </script>
 </body>
