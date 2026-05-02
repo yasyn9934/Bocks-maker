@@ -297,37 +297,100 @@
             background: #fafbfc;
         }
 
-        /* حاوية المعاينة الملكية */
-.modal-preview-side {
-    perspective: 1000px;
-    background: #555; /* خلفية داكنة لإبراز الصفحات */
-}
+        /* ── حاوية المعاينة: سحب عمودي ── */
+        .modal-preview-side {
+            flex: 1;
+            background: #2e2e2e;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px 50px;
+            gap: 25px;
+            scroll-behavior: smooth;
+            position: relative;
+        }
+        .modal-preview-side::-webkit-scrollbar { width: 6px; }
+        .modal-preview-side::-webkit-scrollbar-track { background: #222; }
+        .modal-preview-side::-webkit-scrollbar-thumb { background: #b8860b; border-radius: 3px; }
 
+        /* مؤشر الصفحات العائم */
+        .preview-page-counter {
+            position: sticky;
+            top: 10px;
+            z-index: 20;
+            background: rgba(20,20,20,0.80);
+            backdrop-filter: blur(6px);
+            color: #ddd;
+            font-family: 'Amiri', serif;
+            font-size: 12pt;
+            padding: 5px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(184,134,11,0.4);
+            pointer-events: none;
+            align-self: flex-end;
+            margin-bottom: -10px;
+        }
 
-        /* صفحات المعاينة الكاملة (تطابق محرك التحرير) */
-        .full-page {
-    width: 100%;
-    height: 100%;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    overflow: hidden; /* يمنع خروج النص */
-    padding: 60px !important;
-    position: relative;
-}
-        .full-page img, .full-page video { max-width: 100%; height: auto; border-radius: 8px; }
+        /* حاوية كل صفحة */
+        .preview-page-wrapper {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+        }
 
-        /* صفحات مصغرة (للتوافق مع الكود القديم إذا احتيج لها) */
-        .mini-page {
-            width: 200px;
-            height: 280px;
-            background: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            border-radius: 5px;
-            padding: 15px;
-            font-size: 9px;
-            line-height: 1.5;
+        /* ══ صفحات الكتاب — مطابقة لـ editor.html ══ */
+        .page-wrapper {
+            position: relative;
             overflow: hidden;
-            color: #333;
+            box-sizing: border-box;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+        }
+        .page-header {
+            position: absolute; width: 100%;
+            display: flex; justify-content: space-between;
+            padding: 0 35mm; font-size: 14pt; color: #4a3f35;
+            font-family: 'Amiri', serif; font-weight: bold; z-index: 10;
+        }
+        .style-islamic .page-header { top: 6mm; }
+        .style-classic .page-header { top: 5mm; }
+        .style-floral  .page-header { top: 7mm; }
+        .style-royal   .page-header { top: 8mm; }
+        .style-minimal .page-header { top: 5mm; }
+        .style-clean   .page-header { top: 10mm; }
+
+        .content-body {
+            position: absolute; top: 42mm; bottom: 25mm; left: 35mm; right: 35mm;
+            overflow: hidden; z-index: 2; line-height: 2.2; font-family: 'Amiri', serif;
+        }
+        .cover-page .content-body {
+            top: 0; bottom: 0; left: 0; right: 0;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+        }
+        .cover-page { background-size: cover; background-position: center; }
+
+        /* فهرس المحتويات */
+        .toc-title {
+            font-family: 'Aref Ruqaa', serif; font-size: 26pt; text-align: center;
+            color: #4a3f35; margin-bottom: 12mm; border-bottom: 2px solid #b8860b; padding-bottom: 4mm;
+        }
+        .toc-item {
+            display: flex; justify-content: space-between; align-items: baseline;
+            border-bottom: 1px dotted #ccc; padding: 3mm 0; font-family: 'Amiri', serif;
+        }
+        .toc-text { font-size: 15pt; color: #333; }
+        .toc-page { font-size: 12pt; color: #888; }
+
+        /* حواشي */
+        .footnotes-section {
+            position: absolute; bottom: 8mm; left: 35mm; right: 35mm;
+            border-top: 1px solid #ccc; padding-top: 4px;
+            font-size: 10pt; color: #666; font-family: 'Amiri', serif; z-index: 5;
         }
 
         @keyframes slideUp {
@@ -467,23 +530,42 @@
             font-size: 20px;
             color: #999;
         }
-        .page-wrapper {
-    margin-bottom: 30px;
-    transform: scale(0.6);
-    transform-origin: top center;
-    width: 794px;
-    height: 1123px;
-    margin-top: -150px;
-}
         /* إدارة التصنيفات */
-        .cat-edit-row { display:flex; align-items:center; gap:8px; padding:10px 12px; border:1px solid #e8ecf0; border-radius:10px; margin-bottom:8px; background:#fff; flex-wrap:wrap; transition:box-shadow 0.2s; }
-        .cat-edit-row:hover { box-shadow:0 3px 10px rgba(0,0,0,0.08); }
-        .cat-color-dot { width:20px; height:20px; border-radius:50%; flex-shrink:0; border:2px solid rgba(0,0,0,0.1); }
-        .cat-edit-row input[type="text"] { flex:1; min-width:100px; padding:7px 10px; border:1px solid #ddd; border-radius:6px; font-family:'Amiri',serif; font-size:13pt; }
-        .cat-edit-row input[type="color"] { width:38px; height:36px; border:1px solid #ddd; border-radius:6px; cursor:pointer; flex-shrink:0; padding:2px; }
-        .cat-edit-row input[type="number"] { width:65px; padding:7px; border:1px solid #ddd; border-radius:6px; font-size:12pt; flex-shrink:0; }
-        .cat-delete-btn { background:#ffebee; color:#d32f2f; border:1px solid #ffcdd2; border-radius:6px; padding:6px 10px; cursor:pointer; font-size:14px; flex-shrink:0; }
-        .cat-delete-btn:hover { background:#d32f2f; color:white; }
+        .cat-edit-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border: 1px solid #e8ecf0;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: #fff;
+            flex-wrap: wrap;
+            transition: box-shadow 0.2s;
+        }
+        .cat-edit-row:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .cat-edit-row .cat-color-dot {
+            width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(0,0,0,0.1);
+        }
+        .cat-edit-row input[type="text"] {
+            flex: 1; min-width: 100px; padding: 7px 10px;
+            border: 1px solid #ddd; border-radius: 6px;
+            font-family: 'Amiri', serif; font-size: 13pt;
+        }
+        .cat-edit-row input[type="color"] {
+            width: 38px; height: 36px; border: 1px solid #ddd;
+            border-radius: 6px; cursor: pointer; flex-shrink: 0; padding: 2px;
+        }
+        .cat-edit-row input[type="number"] {
+            width: 65px; padding: 7px; border: 1px solid #ddd;
+            border-radius: 6px; font-size: 12pt; flex-shrink: 0;
+        }
+        .cat-delete-btn {
+            background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2;
+            border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 14px;
+            flex-shrink: 0; transition: background 0.2s;
+        }
+        .cat-delete-btn:hover { background: #d32f2f; color: white; }
 
     </style>
 </head>
@@ -548,14 +630,16 @@
 
     <!-- نافذة إدارة التصنيفات الشاملة -->
     <div class="modal-overlay" id="categoriesManagerModal">
-        <div class="modal-content" style="max-width:600px; width:95%; max-height:88vh; display:flex; flex-direction:column; overflow:hidden;">
+        <div class="modal-content" style="max-width: 600px; width: 95%; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden;">
             <h2 class="modal-title" style="flex-shrink:0;">📋 قائمة التصنيفات</h2>
             <div id="catSyncStatus" style="text-align:center; font-size:11pt; color:#888; margin-bottom:10px; flex-shrink:0;"></div>
 
-            <div id="categoriesListContainer" style="flex:1; overflow-y:auto; margin-bottom:15px; padding-left:4px;"></div>
+            <!-- قائمة التصنيفات الحالية (قابلة للتمرير) -->
+            <div id="categoriesListContainer" style="flex:1; overflow-y:auto; margin-bottom: 15px; padding-left: 4px;"></div>
 
-            <div style="border:1px dashed #b8860b; padding:15px; border-radius:10px; margin-bottom:15px; background:#fffbf0; flex-shrink:0;">
-                <h3 style="font-family:'Aref Ruqaa'; color:var(--royal-green); margin-bottom:12px; font-size:14pt;">➕ إضافة تصنيف جديد</h3>
+            <!-- قسم إضافة تصنيف جديد -->
+            <div style="border: 1px dashed #b8860b; padding: 15px; border-radius: 10px; margin-bottom: 15px; background: #fffbf0; flex-shrink:0;">
+                <h3 style="font-family: 'Aref Ruqaa'; color: var(--royal-green); margin-bottom: 12px; font-size:14pt;">➕ إضافة تصنيف جديد</h3>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                     <input type="text" id="newCatName" class="modal-input" placeholder="اسم التصنيف" style="flex:2; min-width:120px; margin-bottom:0;">
                     <input type="color" id="newCatColor" value="#6B8E23" style="width:50px; height:42px; border:1px solid #ddd; border-radius:8px; cursor:pointer; flex-shrink:0;">
@@ -564,6 +648,7 @@
                 </div>
             </div>
 
+            <!-- أزرار الحفظ والإلغاء -->
             <div class="modal-actions" style="flex-shrink:0;">
                 <button class="btn btn-primary" onclick="saveCategoriesManager()">💾 حفظ التغيرات</button>
                 <button class="btn btn-info" onclick="closeModal('categoriesManagerModal')" style="background:#d32f2f;">✕ إلغاء</button>
@@ -754,6 +839,7 @@
     async function syncPendingBooks() {
         if (!navigator.onLine || typeof currentUser === 'undefined' || !currentUser || currentUser.role !== 'member') return;
 
+        // مزامنة الكتاب المعلق
         const pendingBook = localStorage.getItem('pending_sync_book');
         if (pendingBook) {
             try {
@@ -762,9 +848,11 @@
                     body: JSON.stringify({ action: "save_book", userId: currentUser.id, bookData: JSON.parse(pendingBook) })
                 });
                 localStorage.removeItem('pending_sync_book');
+                console.log("تمت مزامنة الكتاب المعلق بنجاح");
             } catch(e) {}
         }
 
+        // مزامنة التصنيفات المعلقة
         const pendingCats = localStorage.getItem('pending_sync_categories');
         if (pendingCats) {
             try {
@@ -773,6 +861,7 @@
                     body: JSON.stringify({ action: "save_categories", userId: currentUser.id, categories: JSON.parse(pendingCats) })
                 });
                 localStorage.removeItem('pending_sync_categories');
+                console.log("تمت مزامنة التصنيفات المعلقة بنجاح");
             } catch(e) {}
         }
     }
@@ -781,6 +870,7 @@
 function saveData() {
     localStorage.setItem('royal_books_list', JSON.stringify(books));
     localStorage.setItem('royal_categories_list', JSON.stringify(categories));
+    // استدعاء دالة المزامنة من auth.js إذا كان المستخدم مسجلاً
     if (typeof syncWithCloud === "function") {
         syncWithCloud();
     }
@@ -817,12 +907,13 @@ function saveData() {
     // ============================================================
     // --- نظام إدارة التصنيفات الشامل ---
     // ============================================================
-    let editingCategories = [];
+    let editingCategories = []; // نسخة عمل عند فتح اللوحة
 
     function openCategoriesManager() {
+        // نسخة عميقة من التصنيفات الحالية للتعديل
         editingCategories = JSON.parse(JSON.stringify(categories));
-        const statusEl = document.getElementById('catSyncStatus');
 
+        const statusEl = document.getElementById('catSyncStatus');
         if (navigator.onLine && typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'member') {
             if (statusEl) statusEl.textContent = '⏳ جاري جلب التصنيفات من السحابة...';
             fetch(AUTH_CONFIG.SCRIPT_URL, {
@@ -833,6 +924,7 @@ function saveData() {
             .then(data => {
                 if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
                     editingCategories = mergeCategoriesLists(editingCategories, data.categories);
+                    // حفظ ما جُلب محلياً
                     localStorage.setItem('royal_categories_list', JSON.stringify(editingCategories));
                     categories = JSON.parse(JSON.stringify(editingCategories));
                     if (statusEl) statusEl.textContent = '☁️ تم جلب التصنيفات من السحابة';
@@ -842,49 +934,60 @@ function saveData() {
                 renderCategoriesManagerList();
             })
             .catch(() => {
-                if (statusEl) statusEl.textContent = '⚠️ تعذر الاتصال — التصنيفات محلية';
+                if (statusEl) statusEl.textContent = '⚠️ تعذر الاتصال بالسحابة، جاري التحميل محلياً';
                 renderCategoriesManagerList();
             });
         } else {
-            if (statusEl) statusEl.textContent = !navigator.onLine ? '📴 غير متصل — التصنيفات محلية فقط' : '💾 تصنيفات محلية';
+            if (statusEl) statusEl.textContent = navigator.onLine ? '💾 تصنيفات محلية (يرجى تسجيل الدخول للمزامنة)' : '📴 غير متصل — التصنيفات محلية فقط';
             renderCategoriesManagerList();
         }
+
         openModal('categoriesManagerModal');
     }
 
     function mergeCategoriesLists(local, cloud) {
         const map = {};
+        // السحابة أولاً ثم المحلي (الأحدث updatedAt يفوز)
         [...cloud, ...local].forEach(cat => {
-            if (!map[cat.id] || (cat.updatedAt || 0) > (map[cat.id].updatedAt || 0)) map[cat.id] = cat;
+            if (!map[cat.id] || (cat.updatedAt || 0) > (map[cat.id].updatedAt || 0)) {
+                map[cat.id] = cat;
+            }
         });
-        if (!map['default']) map['default'] = { id: 'default', name: 'بلا تصنيف', color: '#888888', order: 999 };
+        // ضمان وجود التصنيف الافتراضي
+        if (!map['default']) {
+            map['default'] = { id: 'default', name: 'بلا تصنيف', color: '#888888', order: 999 };
+        }
         return Object.values(map).sort((a, b) => (a.order || 999) - (b.order || 999));
     }
 
     function renderCategoriesManagerList() {
         const container = document.getElementById('categoriesListContainer');
         if (!container) return;
+
         if (editingCategories.length === 0) {
-            container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">لا توجد تصنيفات.</p>';
+            container.innerHTML = '<p style="color:#999; text-align:center; padding:20px;">لا توجد تصنيفات بعد.</p>';
             return;
         }
+
         container.innerHTML = editingCategories.map(cat => {
             const isDefault = cat.id === 'default';
+            const readonlyAttr = isDefault ? 'readonly style="background:#f5f5f5; color:#999;"' : '';
+            const disabledAttr = isDefault ? 'disabled' : '';
             return `
             <div class="cat-edit-row" id="cat-row-${cat.id}">
                 <span class="cat-color-dot" id="dot-${cat.id}" style="background:${cat.color};"></span>
-                <input type="text" value="${cat.name.replace(/"/g,'&quot;')}"
-                    onchange="updateEditingCat('${cat.id}','name',this.value)"
-                    ${isDefault ? 'readonly style="background:#f5f5f5;color:#999;"' : ''} placeholder="اسم التصنيف">
+                <input type="text" value="${cat.name.replace(/"/g, '&quot;')}"
+                    onchange="updateEditingCat('${cat.id}', 'name', this.value)"
+                    ${readonlyAttr} placeholder="اسم التصنيف">
                 <input type="color" value="${cat.color}"
-                    oninput="updateEditingCat('${cat.id}','color',this.value)"
-                    ${isDefault ? 'disabled' : ''} title="اللون">
+                    oninput="updateEditingCat('${cat.id}', 'color', this.value)"
+                    title="لون التصنيف" ${disabledAttr}>
                 <input type="number" value="${cat.order || 1}" min="1"
-                    onchange="updateEditingCat('${cat.id}','order',parseInt(this.value)||1)"
-                    ${isDefault ? 'disabled' : ''} title="الترتيب">
+                    onchange="updateEditingCat('${cat.id}', 'order', parseInt(this.value)||1)"
+                    title="الترتيب (رقم أصغر = يظهر أولاً)" ${disabledAttr}>
                 ${!isDefault
-                    ? `<button class="cat-delete-btn" onclick="deleteEditingCat('${cat.id}')" title="حذف">🗑️</button>`
-                    : `<span style="width:38px;flex-shrink:0;"></span>`}
+                    ? `<button class="cat-delete-btn" onclick="deleteEditingCat('${cat.id}')" title="حذف هذا التصنيف">🗑️</button>`
+                    : `<span style="width:38px; flex-shrink:0;"></span>`}
             </div>`;
         }).join('');
     }
@@ -894,6 +997,7 @@ function saveData() {
         if (!cat) return;
         cat[field] = value;
         cat.updatedAt = Date.now();
+        // تحديث فوري للألوان في الواجهة
         if (field === 'color') {
             const dot = document.getElementById('dot-' + id);
             if (dot) dot.style.background = value;
@@ -903,50 +1007,82 @@ function saveData() {
     function deleteEditingCat(id) {
         const cat = editingCategories.find(c => c.id === id);
         if (!cat) return;
-        const n = books.filter(b => (b.categoryIds||[]).includes(id) || b.categoryId === id).length;
-        const msg = n > 0 ? `هل تريد حذف "${cat.name}"؟\n${n} كتاب مرتبط سيتحول إلى "بلا تصنيف".` : `هل تريد حذف "${cat.name}"؟`;
-        if (confirm(msg)) { editingCategories = editingCategories.filter(c => c.id !== id); renderCategoriesManagerList(); }
+        const booksUsingCat = books.filter(b => (b.categoryIds || []).includes(id) || b.categoryId === id).length;
+        const msg = booksUsingCat > 0
+            ? `هل تريد حذف التصنيف "${cat.name}"؟\nيوجد ${booksUsingCat} كتاب مرتبط به وسيتحول إلى "بلا تصنيف".`
+            : `هل تريد حذف التصنيف "${cat.name}"؟`;
+        if (confirm(msg)) {
+            editingCategories = editingCategories.filter(c => c.id !== id);
+            renderCategoriesManagerList();
+        }
     }
 
     function addNewCategoryToList() {
         const nameEl = document.getElementById('newCatName');
+        const colorEl = document.getElementById('newCatColor');
+        const orderEl = document.getElementById('newCatOrder');
         const name = nameEl.value.trim();
-        if (!name) { alert('يرجى إدخال اسم التصنيف.'); nameEl.focus(); return; }
-        editingCategories.push({ id: 'cat_' + Date.now(), name, color: document.getElementById('newCatColor').value, order: parseInt(document.getElementById('newCatOrder').value) || 1, updatedAt: Date.now() });
-        editingCategories.sort((a, b) => (a.order||999) - (b.order||999));
+        if (!name) { alert('يرجى إدخال اسم التصنيف أولاً.'); nameEl.focus(); return; }
+
+        const newCat = {
+            id: 'cat_' + Date.now(),
+            name,
+            color: colorEl.value,
+            order: parseInt(orderEl.value) || 1,
+            updatedAt: Date.now()
+        };
+        editingCategories.push(newCat);
+        editingCategories.sort((a, b) => (a.order || 999) - (b.order || 999));
+
         nameEl.value = '';
-        document.getElementById('newCatOrder').value = '1';
+        orderEl.value = '1';
         renderCategoriesManagerList();
-        const c = document.getElementById('categoriesListContainer');
-        if (c) setTimeout(() => { c.scrollTop = c.scrollHeight; }, 50);
+        // تمرير القائمة للأسفل لإظهار العنصر الجديد
+        const container = document.getElementById('categoriesListContainer');
+        if (container) setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
     }
 
     async function saveCategoriesManager() {
-        editingCategories.sort((a, b) => (a.order||999) - (b.order||999));
-        // نقل كتب التصنيفات المحذوفة إلى "بلا تصنيف"
+        // ترتيب نهائي
+        editingCategories.sort((a, b) => (a.order || 999) - (b.order || 999));
+
+        // تطبيق التصنيفات المعدلة + نقل الكتب المرتبطة بتصنيفات محذوفة
         const deletedIds = categories.map(c => c.id).filter(id => !editingCategories.find(e => e.id === id));
         if (deletedIds.length > 0) {
             books.forEach(book => {
-                if (book.categoryIds) { book.categoryIds = book.categoryIds.filter(id => !deletedIds.includes(id)); if (!book.categoryIds.length) book.categoryIds = ['default']; }
+                if (book.categoryIds) {
+                    book.categoryIds = book.categoryIds.filter(id => !deletedIds.includes(id));
+                    if (book.categoryIds.length === 0) book.categoryIds = ['default'];
+                }
                 if (deletedIds.includes(book.categoryId)) book.categoryId = 'default';
             });
-            localStorage.setItem('royal_books_list', JSON.stringify(books));
         }
+
         categories = editingCategories;
+        // حفظ محلياً دائماً
         localStorage.setItem('royal_categories_list', JSON.stringify(categories));
+        localStorage.setItem('royal_books_list', JSON.stringify(books));
+
+        // حفظ في السحابة إن كان متصلاً
         let cloudSaved = false;
         if (navigator.onLine && typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'member') {
             try {
-                await fetch(AUTH_CONFIG.SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "save_categories", userId: currentUser.id, categories }) });
+                await fetch(AUTH_CONFIG.SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "save_categories", userId: currentUser.id, categories: categories })
+                });
                 cloudSaved = true;
                 localStorage.removeItem('pending_sync_categories');
-            } catch(e) { localStorage.setItem('pending_sync_categories', JSON.stringify(categories)); }
+            } catch(e) {
+                localStorage.setItem('pending_sync_categories', JSON.stringify(categories));
+            }
         } else if (!navigator.onLine) {
             localStorage.setItem('pending_sync_categories', JSON.stringify(categories));
         }
+
         renderBooks();
         closeModal('categoriesManagerModal');
-        alert('✅ تم حفظ التصنيفات ' + (cloudSaved ? 'محلياً وفي السحابة ☁️' : 'محلياً فقط 💾'));
+        alert('✅ تم حفظ التصنيفات ' + (cloudSaved ? 'محلياً وفي السحابة ☁️' : 'محلياً فقط 💾' + (!navigator.onLine ? ' (ستُزامَن عند الاتصال)' : '')));
     }
 
     // --- التصنيفات المتعددة (من النسخة الجديدة) ---
@@ -1171,8 +1307,12 @@ function saveData() {
         document.getElementById('bookModal').style.display = 'none';
         document.getElementById('authConfirmInput').value = '';
 
+        // حذف من السحابة إن كان متصلاً
         if (bookToDelete && navigator.onLine && typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'member') {
-            fetch(AUTH_CONFIG.SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "delete_book", userId: currentUser.id, bookId: bookToDelete.id }) }).catch(() => {});
+            fetch(AUTH_CONFIG.SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "delete_book", userId: currentUser.id, bookId: bookToDelete.id })
+            }).catch(() => {});
         }
     }
 
@@ -1219,51 +1359,227 @@ function saveData() {
         syncBtn.style.display = isStandalone ? 'flex' : 'none';
     }
 
-// 2. محرك المعاينة المطور (المطابق للمحرر)
+// ══════════════════════════════════════════════════════════════
+// نظام المعاينة الملكي — السحب العمودي مع بناء الصفحات الحقيقي
+// ══════════════════════════════════════════════════════════════
+let _pvBook  = null;
+let _pvVault = {};
+let _pvScale = 1;
+
 function openBookPreview(bookId) {
-    activeBookId = bookId;
+    currentActionBookId = bookId;
     const book = books.find(b => b.id === bookId);
-    if(!book) return;
+    if (!book) return;
+    _pvBook = book;
 
-    document.getElementById('modalBookTitle').innerText = book.title;
-    document.getElementById('modalBookQuote').innerText = book.quote ? `"${book.quote}"` : "لا يوجد اقتباس.";
+    document.getElementById('modalBookTitle').innerHTML = applyRoyalStyles(book.title || 'كتاب بدون عنوان');
+    const qEl = document.getElementById('modalBookQuote');
+    if (qEl) qEl.innerHTML = book.quote ? applyRoyalStyles(`" ${book.quote} "`) : 'لم يتم وضع اقتباس مميز بعد.';
 
-    const previewCont = document.getElementById('modalPreview');
-    previewCont.innerHTML = ""; 
-    
-    // جلب الإعدادات الأصلية من الكتاب
-    const settings = book.settings || {};
-    const pageStyleClass = book.pageStyle || 'style-modern'; // النمط المختار في المحرر
+    updateFavBtn(book);
+    document.getElementById('bookModal').style.display = 'flex';
+    _pvLoadVault(book);
+}
 
-    const renderPage = (contentHtml) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'page-wrapper'; // حاوية للتحكم في الحجم
-        
-        const page = document.createElement('div');
-        page.className = `full-page ${pageStyleClass}`;
-        page.style.backgroundColor = settings.pageColor || '#fff';
-        page.style.color = settings.textColor || '#000';
-        
-        // استخدام المحرك الملكي لمعالجة النصوص (Plugins & Features)
-        page.innerHTML = contentHtml;
-        
-        wrapper.appendChild(page);
-        previewCont.appendChild(wrapper);
+function _pvLoadVault(book) {
+    try {
+        const r = indexedDB.open('RoyalBookDB', 1);
+        r.onsuccess = e => {
+            try {
+                const g = e.target.result
+                    .transaction('mediaVaultStore', 'readonly')
+                    .objectStore('mediaVaultStore')
+                    .get('currentVault');
+                g.onsuccess = () => { _pvVault = g.result || {}; _pvBuild(book); };
+                g.onerror   = () => { _pvVault = {};             _pvBuild(book); };
+            } catch(_) { _pvVault = {}; _pvBuild(book); }
+        };
+        r.onerror = () => { _pvVault = {}; _pvBuild(book); };
+    } catch(_) { _pvVault = {}; _pvBuild(book); }
+}
+
+function _pvPluginCSS() {
+    if (typeof RoyalFeatures === 'undefined') return '';
+    let css = '';
+    for (const f in RoyalFeatures)
+        if (RoyalFeatures[f].css) css += RoyalFeatures[f].css + '\n';
+    return css ? `<style>${css}</style>` : '';
+}
+
+function _pvApply(text, fnList) {
+    if (!text) return '';
+    let r = text;
+    if (typeof RoyalFeatures !== 'undefined')
+        for (const f in RoyalFeatures)
+            r = RoyalFeatures[f].execute(r, fnList || []);
+    r = r.replace(/\{وسائط:\s*(.*?)\}/g, (_, k) => {
+        const m = _pvVault[k.trim()];
+        if (!m) return `<span style="color:red;font-size:9pt">[وسائط: ${k}]</span>`;
+        if (m.type === 'image')
+            return `<img src="${m.data}" style="max-width:100%;border-radius:5px;display:block;margin:5px auto">`;
+        return `<div style="text-align:center;padding:4px;border:1px dashed #ccc;font-size:9pt;color:#666">${m.type==='video'?'🎥':'🎵'} ${k}</div>`;
+    });
+    return r;
+}
+
+function _pvBuild(book) {
+    const style  = book.style  || 'style-islamic';
+    const fs     = (book.size  || 20) + 'pt';
+    const bg     = book.color  || '#FFFDD0';
+    const bgs    = book.customBgs || {};
+    const css    = _pvPluginCSS();
+    const title  = _pvApply(book.title  || '', []);
+    const author = _pvApply(book.author || '', []);
+    const date   = book.date || '';
+    const pages  = [];
+
+    // صفحة الغلاف
+    const coverBg = book.cover
+        ? `background-image:url('${book.cover}');background-size:cover;background-position:center`
+        : `background-color:${bg}`;
+
+    pages.push({ html: `
+        <div class="page-wrapper ${style} cover-page" style="background-color:${bg};${coverBg}">
+          ${css}
+          <div class="content-body">
+            <div style="width:100%;margin-top:-40mm;text-align:center">
+              <div style="font-size:55pt;font-family:'Aref Ruqaa',serif;margin-bottom:25mm;line-height:1.1;color:#2c1810">${title}</div>
+              <div style="font-size:30pt;font-family:'Amiri',serif;margin-bottom:15px;color:#4a3f35">${author}</div>
+              <div style="font-size:20pt;font-family:'Amiri',serif;color:#777">${date}</div>
+            </div>
+          </div>
+        </div>` });
+
+    // صفحات المحتوى
+    const rawText = book.text || book.t || '';
+    const lines   = rawText.split('\n');
+    let currentBody  = null;
+    let chapterCount = 0;
+    const tocItems   = [];
+
+    const makePage = (hasHeader) => {
+        const pg = { header: hasHeader, items: [], fns: [] };
+        pages.push(pg);
+        return pg;
     };
 
-    // عرض الغلاف، الفهرس، ثم الصفحات
-    if (book.coverHtml) renderPage(book.coverHtml);
-    if (book.tocHtml) renderPage(book.tocHtml);
-    (book.contentPages || []).forEach(p => renderPage(p));
+    const pageToHTML = (pg) => {
+        const headerHTML = pg.header ? `<div class="page-header"><span>${title}</span><span>${date}</span></div>` : '';
+        const fnsHTML = pg.fns.length
+            ? `<div class="footnotes-section">${pg.fns.map((f,i)=>`<div>[${i+1}] ${_pvApply(f,[])}</div>`).join('')}</div>` : '';
+        return `<div class="page-wrapper ${style}" style="background-color:${bg}">
+          ${css}${headerHTML}
+          <div class="content-body" style="font-size:${fs}">${pg.items.join('')}</div>
+          ${fnsHTML}
+        </div>`;
+    };
 
-    document.getElementById('bookModal').style.display = 'flex';
+    currentBody = makePage(true);
+
+    lines.forEach(line => {
+        if (line.startsWith('# ')) {
+            if (currentBody.items.length > 0) currentBody = makePage(true);
+            chapterCount++;
+            const hText = line.replace('# ', '').trim();
+            tocItems.push({ title: hText, ch: chapterCount });
+            currentBody.items.push(`<h1 id="chapter-${chapterCount}" style="text-align:center;font-family:'Aref Ruqaa',serif;margin-bottom:10mm;font-size:${fs}">${_pvApply(hText,[])}</h1>`);
+        } else {
+            currentBody.items.push(line.trim() === ''
+                ? '<div style="margin-bottom:4px">&nbsp;</div>'
+                : `<div style="white-space:pre-wrap;margin-bottom:4px;font-size:${fs}">${_pvApply(line, currentBody.fns)}</div>`);
+        }
+    });
+
+    for (let i = 1; i < pages.length; i++) {
+        if (pages[i].html) continue;
+        pages[i].html = pageToHTML(pages[i]);
+    }
+
+    // صفحة الفهرس
+    if (tocItems.length > 0) {
+        const rows = tocItems.map(t =>
+            `<div class="toc-item"><span class="toc-text">${_pvApply(t.title,[])}</span><span class="toc-page">الفصل ${t.ch}</span></div>`
+        ).join('');
+        pages.push({ html: `
+            <div class="page-wrapper ${style}" style="background-color:${bg}">
+              ${css}
+              <div class="page-header"><span>${title}</span><span>${date}</span></div>
+              <div class="content-body" style="font-size:${fs}">
+                <div class="toc-title">فهرس المحتويات</div>${rows}
+              </div>
+            </div>` });
+    }
+
+    _pvRender(pages, bgs);
+}
+
+function _pvRender(pages, bgs) {
+    const side = document.getElementById('modalPreview');
+    if (!side) return;
+
+    _pvCalcScale(side);
+
+    side.innerHTML = `
+        <div class="preview-page-counter" id="pvCounter">صفحة 1 من ${pages.length}</div>
+        ${pages.map((pg,i) => `<div class="preview-page-wrapper" data-page="${i+1}">${pg.html}</div>`).join('')}
+    `;
+
+    Object.keys(bgs).forEach(num => {
+        const wrapper = side.querySelector(`[data-page="${num}"]`);
+        if (!wrapper) return;
+        const pw = wrapper.querySelector('.page-wrapper');
+        if (!pw) return;
+        pw.style.setProperty('background-image',    `url('${bgs[num]}')`, 'important');
+        pw.style.setProperty('background-size',     'cover',              'important');
+        pw.style.setProperty('background-position', 'center',            'important');
+        pw.style.setProperty('background-repeat',   'no-repeat',         'important');
+    });
+
+    _pvApplyScale(side);
+    _pvObserve(side, pages.length);
+
+    if (window._pvResizeH) window.removeEventListener('resize', window._pvResizeH);
+    window._pvResizeH = () => { _pvCalcScale(side); _pvApplyScale(side); };
+    window.addEventListener('resize', window._pvResizeH);
+}
+
+function _pvCalcScale(side) {
+    const avW = (side.offsetWidth  || 600) - 40;
+    const avH = (side.offsetHeight || 700) - 80;
+    _pvScale = Math.min(avW / 945, avH / 1334, 1);
+}
+
+function _pvApplyScale(side) {
+    const scaledH = Math.ceil(1334 * _pvScale);
+    side.querySelectorAll('.page-wrapper').forEach(pw => {
+        pw.style.width           = '945px';
+        pw.style.height          = '1334px';
+        pw.style.transform       = `scale(${_pvScale})`;
+        pw.style.transformOrigin = 'top center';
+    });
+    side.querySelectorAll('.preview-page-wrapper').forEach(pw => {
+        pw.style.height = (scaledH + 15) + 'px';
+    });
+}
+
+function _pvObserve(side, total) {
+    const counter = document.getElementById('pvCounter');
+    if (!counter || !('IntersectionObserver' in window)) return;
+    const obs = new IntersectionObserver(entries => {
+        let best = null, bestRatio = 0;
+        entries.forEach(e => { if (e.intersectionRatio > bestRatio) { bestRatio = e.intersectionRatio; best = e.target; } });
+        if (best) counter.textContent = `صفحة ${best.dataset.page || '?'} من ${total}`;
+    }, { root: side, threshold: [0.1, 0.5, 0.9] });
+    side.querySelectorAll('.preview-page-wrapper').forEach(el => obs.observe(el));
 }
 
 
     function closeModalOutside(event) {
-        if(event.target.id === 'bookModal') {
+        if (event.target.id === 'bookModal') {
             document.getElementById('bookModal').style.display = 'none';
             hideImageInput();
+            _pvBook = null;
+            if (window._pvResizeH) window.removeEventListener('resize', window._pvResizeH);
         }
     }
 
@@ -1416,60 +1732,110 @@ function openBookPreview(bookId) {
         }
     }
 
-    // 3. دالة توليد صورة البطاقة المطابقة للغلاف
-function setCoverFromBookData() {
-    const book = books.find(b => b.id === activeBookId);
-    const canvas = document.createElement('canvas');
-    canvas.width = 400; canvas.height = 600;
-    const ctx = canvas.getContext('2d');
+    // توليد صورة بطاقة الكتاب من الغلاف الحقيقي
+    function _pvLoadScript(url, cb) {
+        if (document.querySelector(`script[src="${url}"]`)) { cb(); return; }
+        const s = document.createElement('script');
+        s.src = url; s.onload = cb; s.onerror = cb;
+        document.head.appendChild(s);
+    }
 
-    // محاكاة نمط الغلاف (Style)
-    const bgColor = book.settings?.pageColor || '#fdfaf0';
-    const textColor = book.settings?.textColor || '#2c3e50';
+    function _pvLoadVaultForCover(book, callback) {
+        try {
+            const r = indexedDB.open('RoyalBookDB', 1);
+            r.onsuccess = e => {
+                try {
+                    const g = e.target.result.transaction('mediaVaultStore','readonly').objectStore('mediaVaultStore').get('currentVault');
+                    g.onsuccess = () => callback(g.result || {});
+                    g.onerror   = () => callback({});
+                } catch(_) { callback({}); }
+            };
+            r.onerror = () => callback({});
+        } catch(_) { callback({}); }
+    }
 
-    // رسم الخلفية
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    function _pvRenderCoverToCanvas(book, vault, callback) {
+        const PAGE_W = 945, PAGE_H = 1334;
+        const style = book.style || 'style-islamic';
+        const bg    = book.color || '#FFFDD0';
+        let dynCSS  = '';
+        if (typeof RoyalFeatures !== 'undefined')
+            for (const f in RoyalFeatures)
+                if (RoyalFeatures[f].css) dynCSS += RoyalFeatures[f].css + '\n';
 
-    // إذا كان هناك صورة غلاف أصلية، نرسمها كخلفية مصغرة
-    if (book.cCoverImg) {
-        const img = new Image();
-        img.onload = function() {
-            ctx.globalAlpha = 0.3; // جعلها شفافة قليلاً خلف النصوص
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            ctx.globalAlpha = 1.0;
-            drawText();
+        const applyF = t => {
+            if (!t) return '';
+            let r = t;
+            if (typeof RoyalFeatures !== 'undefined')
+                for (const f in RoyalFeatures) r = RoyalFeatures[f].execute(r, []);
+            return r;
         };
-        img.src = book.cCoverImg;
-    } else {
-        drawText();
-    }
-    function drawText() {
-        ctx.fillStyle = textColor;
-        ctx.textAlign = 'center';
-        
-        // العنوان (بخط عريض)
-        ctx.font = 'bold 32px Arial';
-        ctx.fillText(book.title || 'بدون عنوان', canvas.width/2, 200);
-        
-        // المؤلف
-        ctx.font = '22px Arial';
-        ctx.fillText(book.author || '', canvas.width/2, 260);
-        
-        // التاريخ في الأسفل
-        ctx.font = '16px Arial';
-        ctx.fillText(book.date || '', canvas.width/2, 550);
 
-        // إطار ملكي ذهبي
-        ctx.strokeStyle = '#b8860b';
-        ctx.lineWidth = 8;
-        ctx.strokeRect(15, 15, canvas.width-30, canvas.height-30);
+        const coverBg = book.cover
+            ? `background-image:url('${book.cover}');background-size:cover;background-position:center`
+            : `background-color:${bg}`;
 
-        book.coverImage = canvas.toDataURL('image/jpeg', 0.8);
-        book.autoCardImage = true; // علامة ليعرف النظام أنها تلقائية
-        finalizeImageUpdate();
+        const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+        <style>
+          @font-face{font-family:'Amiri';src:url('fonts/Amiri-Regular.ttf')format('truetype')}
+          @font-face{font-family:'Aref Ruqaa';src:url('fonts/ArefRuqaa-Bold.ttf')format('truetype');font-weight:bold}
+          *{margin:0;padding:0;box-sizing:border-box}
+          body{width:${PAGE_W}px;height:${PAGE_H}px;overflow:hidden;background:transparent}
+          .page-wrapper{width:${PAGE_W}px;height:${PAGE_H}px;position:relative;overflow:hidden;${coverBg};background-color:${bg}}
+          .content-body{position:absolute;top:0;bottom:0;left:0;right:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+          ${dynCSS}
+        </style></head><body>
+        <div class="page-wrapper ${style}">
+          <div class="content-body">
+            <div style="width:100%;margin-top:-40mm;text-align:center">
+              <div style="font-size:55pt;font-family:'Aref Ruqaa',serif;margin-bottom:25mm;line-height:1.1;color:#2c1810">${applyF(book.title||'')}</div>
+              <div style="font-size:30pt;font-family:'Amiri',serif;margin-bottom:15px;color:#4a3f35">${applyF(book.author||'')}</div>
+              <div style="font-size:20pt;font-family:'Amiri',serif;color:#777">${book.date||''}</div>
+            </div>
+          </div>
+        </div></body></html>`;
+
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = `position:fixed;left:-9999px;top:-9999px;width:${PAGE_W}px;height:${PAGE_H}px;border:none;opacity:0;pointer-events:none;z-index:-1`;
+        document.body.appendChild(iframe);
+        iframe.onload = () => {
+            _pvLoadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', () => {
+                const target = iframe.contentDocument.querySelector('.page-wrapper');
+                html2canvas(target, { width: PAGE_W, height: PAGE_H, scale: 0.35, useCORS: true, allowTaint: true, logging: false, backgroundColor: bg })
+                    .then(canvas => { document.body.removeChild(iframe); callback(canvas.toDataURL('image/jpeg', 0.85)); })
+                    .catch(() => { document.body.removeChild(iframe); callback(null); });
+            });
+        };
+        iframe.src = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
     }
-}
+
+    function generateCoverFromBook() {
+        const book = books.find(b => b.id === currentActionBookId);
+        if (!book) return;
+        const btn = event?.currentTarget || event?.target;
+        if (btn) { btn.textContent = '⏳ جاري التوليد...'; btn.disabled = true; }
+
+        _pvLoadVaultForCover(book, vault => {
+            _pvVault = vault;
+            _pvRenderCoverToCanvas(book, vault, dataURL => {
+                if (!dataURL) {
+                    alert('تعذّر توليد الصورة.');
+                    if (btn) { btn.textContent = 'توليد من بيانات الكتاب (آلي)'; btn.disabled = false; }
+                    return;
+                }
+                book.cardImage = dataURL;
+                book.updatedAt = Date.now();
+                saveData();
+                renderBooks();
+                if (btn) {
+                    btn.textContent = '✅ تم التوليد!'; btn.disabled = false;
+                    setTimeout(() => { btn.textContent = 'توليد من بيانات الكتاب (آلي)'; }, 2000);
+                }
+                const opts = document.getElementById('cardImageOptions');
+                if (opts) opts.style.display = 'none';
+            });
+        });
+    }
 
 
     function finalizeImageUpdate() {
