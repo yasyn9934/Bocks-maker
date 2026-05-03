@@ -294,19 +294,74 @@
         window.location.href = indexPage;
     }
 
+    // ============================================================
+    // [جديد] جلب بيانات كتاب محدد من السحابة
+    // يُرجع كائن البيانات إن نجح، أو null إن فشل
+    // ============================================================
+    async function fetchFromCloud(bookId, userId) {
+        if (!bookId || !userId) return null;
+        try {
+            const cleanBookId = (bookId || '').replace(/^book_/i, '');
+            const response = await fetch(AUTH_CONFIG.SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "get_book",
+                    userId: userId,
+                    bookId: cleanBookId
+                })
+            });
+            const result = await response.json();
+            if (result.success && result.bookData) {
+                return result.bookData;
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // ============================================================
+    // [جديد] حذف كتاب من السحابة
+    // يُرجع true إن نجح، أو false إن فشل
+    // ============================================================
+    async function deleteFromCloud(bookId, userId) {
+        if (!bookId || !userId) return false;
+        try {
+            const cleanBookId = (bookId || '').replace(/^book_/i, '');
+            const response = await fetch(AUTH_CONFIG.SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "delete_book",
+                    userId: userId,
+                    bookId: cleanBookId
+                })
+            });
+            const result = await response.json();
+            return result.success === true;
+        } catch (e) {
+            return false;
+        }
+    }
+
     async function saveToDrive() {
         const bookData = getCurrentBookObject();
         currentBookId = bookData.id; 
         const btn = document.getElementById('saveCloudBtn');
         if(btn) { btn.innerText = "جاري الحفظ...⏳"; btn.disabled = true; }
 
+        // الحفظ المحلي دائماً (أولاً وبغض النظر عن حالة الاتصال)
         localStorage.setItem('bookData', JSON.stringify(bookData));
         updateGlobalBooksList(bookData);
         localStorage.setItem('pending_sync_book', JSON.stringify(bookData)); 
         
-        try {
-            if (!navigator.onLine) throw new Error("Offline");
+        // [معدّل] محاولة الحفظ السحابي فقط عند الاتصال بالإنترنت
+        if (!navigator.onLine) {
+            if(btn) { btn.innerText = "حفظ محلي 💾"; btn.disabled = false; }
+            alert("تم الحفظ محلياً. سيتم الرفع عند توفر الإنترنت.");
+            return false;
+        }
 
+        try {
             // تنظيف bookId من أي prefix مزدوج (book_book_ → book_)
             const cleanBookId = (bookData.id || '').replace(/^book_/i, '');
             // جلب اسم التصنيف الأول إن وُجد
@@ -332,8 +387,11 @@
                 alert("تم الحفظ في درايف بنجاح ✅");
                 if(btn) { btn.innerText = "حفظ في درايف ☁️"; btn.disabled = false; }
                 return true;
+            } else {
+                throw new Error("Cloud save returned failure");
             }
         } catch (error) {
+            // فشل السحابة → البيانات محفوظة محلياً بالفعل
             alert("تم الحفظ محلياً. سيتم الرفع عند توفر الإنترنت.");
             if(btn) { btn.innerText = "حفظ محلي 💾"; btn.disabled = false; }
             return false;
@@ -421,8 +479,17 @@
     }
 
     // --- 3. استيراد وتصدير وإنشاء ---
-    function startNewBook() {
+
+    // [معدّل] حذف البيانات محلياً وسحابياً إن كان متصلاً
+    async function startNewBook() {
         if (confirm("تنبيه: سيتم مسح العمل الحالي بالكامل. تأكد من الحفظ.")) {
+
+            // [جديد] حذف من السحابة إن كان متصلاً وتوفّر معرف الكتاب والمستخدم
+            if (navigator.onLine && currentBookId && typeof currentUser !== 'undefined' && currentUser) {
+                await deleteFromCloud(currentBookId, currentUser.id);
+            }
+
+            // الحذف المحلي (دائماً)
             localStorage.removeItem('bookData');
             mediaVault = {}; saveVaultToDB(); currentBookId = null;
             document.getElementById('mainText').value = ""; document.getElementById('cTitle').value = ""; document.getElementById('cAuthor').value = ""; document.getElementById('cDate').value = ""; document.getElementById('cCoverImg').value = "";
@@ -827,11 +894,34 @@
     function updateFontSize(s) { document.documentElement.style.setProperty('--global-font-size', s + 'pt'); }
 
     // --- 7. التشغيل الأولي ---
+    // [معدّل] السحابة أولاً إن كان متصلاً، وإلا فالمحلي
     window.onload = () => {
-        loadVaultFromDB((vaultData) => {
+        loadVaultFromDB(async (vaultData) => {
             mediaVault = vaultData;
-            let s = JSON.parse(localStorage.getItem('bookData') || '{}');
-            
+            let localData = JSON.parse(localStorage.getItem('bookData') || '{}');
+            let s = localData; // البيانات الافتراضية من المحلي
+
+            // [جديد] محاولة جلب البيانات من السحابة إن كان المستخدم متصلاً
+            if (
+                navigator.onLine &&
+                localData.id &&
+                typeof currentUser !== 'undefined' &&
+                currentUser
+            ) {
+                const cloudData = await fetchFromCloud(localData.id, currentUser.id);
+                if (cloudData) {
+                    // نفضّل بيانات السحابة إن كانت أحدث أو متساوية في التوقيت
+                    const cloudTime = cloudData.updatedAt || 0;
+                    const localTime = localData.updatedAt || 0;
+                    if (cloudTime >= localTime) {
+                        s = cloudData;
+                        // تحديث النسخة المحلية بأحدث بيانات من السحابة
+                        localStorage.setItem('bookData', JSON.stringify(cloudData));
+                        updateGlobalBooksList(cloudData);
+                    }
+                }
+            }
+
             if(s.id) currentBookId = s.id; 
             renderVaultList();
             
