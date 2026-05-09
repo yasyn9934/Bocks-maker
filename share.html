@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عرض الكتاب المشترك - صانع الكتب</title>
+    <script src="auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="plugins.js"></script>
+    
+    <script src="PDFs/royal-assets.js"></script>
+    <script src="PDFs/royal-parser.js"></script>
+    <script src="PDFs/royal-renderer.js"></script>
+
+    <style>
+        @font-face { font-family: 'Amiri'; src: url('fonts/Amiri-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+        @font-face { font-family: 'Aref Ruqaa'; src: url('fonts/ArefRuqaa-Bold.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+
+        :root {
+            --royal-gold: #b8860b;
+            --royal-green: #6B8E23;
+            --bg-color: #f4f6f8;
+            --text-color: #333;
+            --topbar-bg: #fff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Amiri', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            height: 60px;
+            background: var(--topbar-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .top-bar-right, .top-bar-left {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .top-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Amiri', serif;
+            font-size: 12pt;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .top-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .top-btn.primary {
+            background: var(--royal-green);
+            color: white;
+        }
+
+        .top-btn.gold {
+            background: var(--royal-gold);
+            color: white;
+        }
+
+        /* Content Area */
+        #content-viewer {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            background: #525659; /* PDF viewer style background */
+        }
+
+        #book-container {
+            width: 250mm;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+
+        /* Interactive View Overrides */
+        .interactive-mode #content-viewer {
+            background: var(--bg-color);
+        }
+
+        /* Loading State */
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            font-size: 18pt;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--royal-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Hidden elements for rendering */
+        #hidden-render-area {
+            display: none;
+        }
+        
+        /* Error state */
+        .error-container {
+            text-align: center;
+            padding: 50px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .error-container h2 { color: #d32f2f; margin-bottom: 10px; }
+
+        @media (max-width: 250mm) {
+            #book-container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>جاري جلب بيانات الكتاب...</p>
+    </div>
+
+    <div class="top-bar">
+        <div class="top-bar-right">
+            <button class="top-btn" onclick="window.location.href='index.html'">الرئيسية</button>
+            <button class="top-btn" id="loginBtn" onclick="window.location.href='login.html'">تسجيل الدخول</button>
+        </div>
+        
+        <div class="top-bar-center" id="bookTitleDisplay" style="font-family: 'Aref Ruqaa'; font-size: 16pt; color: var(--royal-green);"></div>
+
+        <div class="top-bar-left">
+            <button class="top-btn gold" id="toggleViewBtn" onclick="toggleViewMode()">تبديل طريقة العرض</button>
+            <button class="top-btn" id="commentBtn" onclick="openComments()" title="التعليقات (قريباً)" disabled>التعليقات</button>
+            <button class="top-btn primary" id="downloadBtn" onclick="downloadBook()">تحميل الكتاب</button>
+        </div>
+    </div>
+
+    <div id="content-viewer">
+        <div id="book-container"></div>
+    </div>
+
+    <script>
+        let currentBookData = null;
+        let shareSettings = null;
+        let viewMode = 'preview'; // 'preview' (PDF-like) or 'interactive'
+        const urlParams = new URLSearchParams(window.location.search);
+        const shareId = urlParams.get('id');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!shareId) {
+                showError("رابط غير صالح أو مفقود.");
+                return;
+            }
+            await fetchSharedBook();
+            updateUI();
+        });
+
+        async function fetchSharedBook() {
+            try {
+                const response = await fetch(AUTH_CONFIG.SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "get_shared_book",
+                        shareId: shareId
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    currentBookData = result.bookData;
+                    shareSettings = result.shareSettings;
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    renderBook();
+                } else {
+                    showError(result.message || "تعذر العثور على الكتاب.");
+                }
+            } catch (error) {
+                console.error(error);
+                showError("حدث خطأ أثناء الاتصال بالخادم.");
+            }
+        }
+
+        function showError(msg) {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.innerHTML = `
+                <div class="error-container">
+                    <h2>عذراً!</h2>
+                    <p>${msg}</p>
+                    <button class="top-btn" style="margin-top:20px; width:100%" onclick="window.location.href='index.html'">العودة للرئيسية</button>
+                </div>
+            `;
+        }
+
+        function updateUI() {
+            if (currentUser && currentUser.role === 'member') {
+                document.getElementById('loginBtn').style.display = 'none';
+            }
+            if (currentBookData) {
+                document.getElementById('bookTitleDisplay').innerText = currentBookData.metadata.title;
+            }
+            
+            // Permissions check
+            if (shareSettings) {
+                if (!shareSettings.allowDownload) {
+                    document.getElementById('downloadBtn').style.display = 'none';
+                }
+                if (shareSettings.allowComments) {
+                    document.getElementById('commentBtn').disabled = false;
+                    document.getElementById('commentBtn').title = "التعليقات";
+                }
+            }
+        }
+
+        function renderBook() {
+            const container = document.getElementById('book-container');
+            container.innerHTML = '';
+            
+            if (viewMode === 'preview') {
+                document.body.classList.remove('interactive-mode');
+                // Use the same logic as index.html preview
+                if (typeof window.royalParser !== 'undefined' && typeof window.royalRenderer !== 'undefined') {
+                    const parsedData = window.royalParser.parse(currentBookData.text, currentBookData.metadata);
+                    // Instead of full PDF render, we use the HTML preview logic
+                    // We can simulate the preview by generating pages as HTML
+                    generateHtmlPreview(parsedData, currentBookData.metadata);
+                }
+            } else {
+                document.body.classList.add('interactive-mode');
+                // Interactive view logic (similar to editor.html export result)
+                container.innerHTML = `<div style="padding:40px; text-align:center;">
+                    <h1 style="font-family:'Aref Ruqaa'; font-size:30pt;">${currentBookData.metadata.title}</h1>
+                    <p style="font-size:18pt; margin-top:20px;">${currentBookData.text.replace(/\n/g, '<br>')}</p>
+                </div>`;
+            }
+        }
+
+        function generateHtmlPreview(parsedData, metadata) {
+            const container = document.getElementById('book-container');
+            // Basic HTML preview implementation (simplified version of renderer)
+            // In a real scenario, we'd reuse the logic that creates .page-wrapper elements
+            const pages = splitIntoPages(parsedData);
+            pages.forEach((page, index) => {
+                const pageEl = document.createElement('div');
+                pageEl.className = `page-wrapper ${metadata.style || 'style-islamic'}`;
+                pageEl.style.marginBottom = '20px';
+                
+                let headerHtml = `<div class="page-header">
+                    <span>${metadata.title}</span>
+                    <span>${metadata.date || ''}</span>
+                </div>`;
+                
+                let contentHtml = `<div class="content-body" style="font-size:${metadata.fontSize || '20pt'}">`;
+                page.blocks.forEach(block => {
+                    if (block.type === 'heading') {
+                        contentHtml += `<h2 style="text-align:center; color:${block.color}">${block.text}</h2>`;
+                    } else {
+                        contentHtml += `<p style="text-align:right; color:${block.color}">${block.text}</p>`;
+                    }
+                });
+                contentHtml += `</div>`;
+                
+                pageEl.innerHTML = headerHtml + contentHtml;
+                container.appendChild(pageEl);
+            });
+        }
+
+        function splitIntoPages(parsedData) {
+            // Simplified splitting for preview
+            let pages = [];
+            let currentPage = { blocks: [] };
+            let charCount = 0;
+            const charsPerPage = 1000; // rough estimate
+
+            parsedData.blocks.forEach(block => {
+                charCount += block.text.length;
+                currentPage.blocks.push(block);
+                if (charCount > charsPerPage) {
+                    pages.push(currentPage);
+                    currentPage = { blocks: [] };
+                    charCount = 0;
+                }
+            });
+            if (currentPage.blocks.length > 0) pages.push(currentPage);
+            return pages;
+        }
+
+        function toggleViewMode() {
+            viewMode = (viewMode === 'preview') ? 'interactive' : 'preview';
+            renderBook();
+        }
+
+        function downloadBook() {
+            if (typeof window.royalRenderer !== 'undefined' && currentBookData) {
+                const parsedData = window.royalParser.parse(currentBookData.text, currentBookData.metadata);
+                window.royalRenderer.render(parsedData, currentBookData.metadata);
+            }
+        }
+
+        function openComments() {
+            alert("ميزة التعليقات ستكون متاحة قريباً!");
+        }
+    </script>
+</body>
+</html>
