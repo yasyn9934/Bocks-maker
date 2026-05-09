@@ -180,10 +180,10 @@
         <div id="book-container"></div>
     </div>
 
-    <script>
+        <script>
         let currentBookData = null;
         let shareSettings = null;
-        let viewMode = 'preview'; // 'preview' (PDF-like) or 'interactive'
+        let viewMode = 'preview'; // 'preview' أو 'interactive'
         const urlParams = new URLSearchParams(window.location.search);
         const shareId = urlParams.get('id');
 
@@ -222,79 +222,105 @@
 
         function showError(msg) {
             const overlay = document.getElementById('loading-overlay');
-            overlay.innerHTML = `
-                <div class="error-container">
-                    <h2>عذراً!</h2>
-                    <p>${msg}</p>
-                    <button class="top-btn" style="margin-top:20px; width:100%" onclick="window.location.href='index.html'">العودة للرئيسية</button>
-                </div>
-            `;
+            if (overlay) {
+                overlay.innerHTML = `
+                    <div class="error-container">
+                        <h2>عذراً!</h2>
+                        <p>${msg}</p>
+                        <button class="top-btn" style="margin-top:20px; width:100%" onclick="window.location.href='index.html'">العودة للرئيسية</button>
+                    </div>
+                `;
+            }
         }
 
         function updateUI() {
-            if (currentUser && currentUser.role === 'member') {
-                document.getElementById('loginBtn').style.display = 'none';
-            }
-            if (currentBookData) {
-                document.getElementById('bookTitleDisplay').innerText = currentBookData.metadata.title;
+            // إخفاء زر تسجيل الدخول إذا كان المستخدم مسجلاً
+            if (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'member') {
+                const loginBtn = document.getElementById('loginBtn');
+                if (loginBtn) loginBtn.style.display = 'none';
             }
             
-            // Permissions check
+            // تحديث العنوان (القراءة مباشرة من currentBookData وليس من metadata)
+            if (currentBookData) {
+                const titleDisplay = document.getElementById('bookTitleDisplay');
+                if (titleDisplay) titleDisplay.innerText = currentBookData.title || 'بدون عنوان';
+            }
+            
+            // تطبيق الصلاحيات
             if (shareSettings) {
                 if (!shareSettings.allowDownload) {
-                    document.getElementById('downloadBtn').style.display = 'none';
+                    const downloadBtn = document.getElementById('downloadBtn');
+                    if (downloadBtn) downloadBtn.style.display = 'none';
                 }
-                if (shareSettings.allowComments) {
-                    document.getElementById('commentBtn').disabled = false;
-                    document.getElementById('commentBtn').title = "التعليقات";
+                if (shareSettings.allowComment || shareSettings.allowComments) {
+                    const commentBtn = document.getElementById('commentBtn');
+                    if (commentBtn) {
+                        commentBtn.disabled = false;
+                        commentBtn.title = "التعليقات";
+                    }
                 }
             }
         }
 
         function renderBook() {
             const container = document.getElementById('book-container');
+            if (!container || !currentBookData) return;
             container.innerHTML = '';
+            
+            // النص قد يكون محفوظاً كـ text أو t
+            const bookText = currentBookData.text || currentBookData.t || '';
             
             if (viewMode === 'preview') {
                 document.body.classList.remove('interactive-mode');
-                // Use the same logic as index.html preview
-                if (typeof window.royalParser !== 'undefined' && typeof window.royalRenderer !== 'undefined') {
-                    const parsedData = window.royalParser.parse(currentBookData.text, currentBookData.metadata);
-                    // Instead of full PDF render, we use the HTML preview logic
-                    // We can simulate the preview by generating pages as HTML
-                    generateHtmlPreview(parsedData, currentBookData.metadata);
+                
+                if (typeof window.royalParser !== 'undefined' && typeof window.royalRenderer !== 'undefined' && bookText) {
+                    // نمرر كائن الكتاب بالكامل بدلاً من metadata المفقودة
+                    const parsedData = window.royalParser.parse(bookText, currentBookData);
+                    generateHtmlPreview(parsedData, currentBookData);
+                } else {
+                    container.innerHTML = `<div style="padding:40px; text-align:center; color:#fff;">
+                        <p>لا يمكن عرض المعاينة في الوقت الحالي. يرجى التبديل للعرض التفاعلي.</p>
+                    </div>`;
                 }
             } else {
                 document.body.classList.add('interactive-mode');
-                // Interactive view logic (similar to editor.html export result)
                 container.innerHTML = `<div style="padding:40px; text-align:center;">
-                    <h1 style="font-family:'Aref Ruqaa'; font-size:30pt;">${currentBookData.metadata.title}</h1>
-                    <p style="font-size:18pt; margin-top:20px;">${currentBookData.text.replace(/\n/g, '<br>')}</p>
+                    <h1 style="font-family:'Aref Ruqaa'; font-size:30pt; color: var(--royal-green);">${currentBookData.title || 'بدون عنوان'}</h1>
+                    <p style="font-size:16pt; margin-top:30px; text-align:right; line-height:2.2;">${bookText.replace(/\n/g, '<br>')}</p>
                 </div>`;
             }
         }
 
-        function generateHtmlPreview(parsedData, metadata) {
+        function generateHtmlPreview(parsedData, book) {
             const container = document.getElementById('book-container');
-            // Basic HTML preview implementation (simplified version of renderer)
-            // In a real scenario, we'd reuse the logic that creates .page-wrapper elements
             const pages = splitIntoPages(parsedData);
+            
+            if (pages.length === 0) {
+                 container.innerHTML = `<p style="padding:40px; text-align:center;">الكتاب فارغ أو لم يتم تحليله بشكل صحيح.</p>`;
+                 return;
+            }
+
             pages.forEach((page, index) => {
                 const pageEl = document.createElement('div');
-                pageEl.className = `page-wrapper ${metadata.style || 'style-islamic'}`;
+                pageEl.className = `page-wrapper ${book.style || 'style-islamic'}`;
                 pageEl.style.marginBottom = '20px';
+                pageEl.style.backgroundColor = book.color || '#fff';
                 
                 let headerHtml = `<div class="page-header">
-                    <span>${metadata.title}</span>
-                    <span>${metadata.date || ''}</span>
+                    <span>${book.title || ''}</span>
+                    <span>${book.date || ''}</span>
                 </div>`;
                 
-                let contentHtml = `<div class="content-body" style="font-size:${metadata.fontSize || '20pt'}">`;
+                const fontSize = book.size ? book.size + 'pt' : '20pt';
+                let contentHtml = `<div class="content-body" style="font-size:${fontSize}">`;
+                
                 page.blocks.forEach(block => {
+                    const textColor = block.color || '#333';
+                    const textContent = block.text || '';
                     if (block.type === 'heading') {
-                        contentHtml += `<h2 style="text-align:center; color:${block.color}">${block.text}</h2>`;
+                        contentHtml += `<h2 style="text-align:center; color:${textColor}; margin-bottom: 20px;">${textContent}</h2>`;
                     } else {
-                        contentHtml += `<p style="text-align:right; color:${block.color}">${block.text}</p>`;
+                        contentHtml += `<p style="text-align:right; color:${textColor}; margin-bottom: 10px;">${textContent}</p>`;
                     }
                 });
                 contentHtml += `</div>`;
@@ -305,22 +331,34 @@
         }
 
         function splitIntoPages(parsedData) {
-            // Simplified splitting for preview
             let pages = [];
             let currentPage = { blocks: [] };
             let charCount = 0;
-            const charsPerPage = 1000; // rough estimate
+            const charsPerPage = 1000; 
+
+            // حماية صارمة: التأكد من وجود المصفوفة
+            if (!parsedData || !Array.isArray(parsedData.blocks)) return pages;
 
             parsedData.blocks.forEach(block => {
-                charCount += block.text.length;
+                if (!block) return;
+                
+                // حماية آمنة للخاصية text حتى لو كانت undefined (للصور أو الفواصل)
+                const textLength = block.text ? block.text.toString().length : 0;
+                charCount += textLength; 
+                
                 currentPage.blocks.push(block);
+                
                 if (charCount > charsPerPage) {
                     pages.push(currentPage);
                     currentPage = { blocks: [] };
                     charCount = 0;
                 }
             });
-            if (currentPage.blocks.length > 0) pages.push(currentPage);
+            
+            if (currentPage.blocks.length > 0) {
+                pages.push(currentPage);
+            }
+            
             return pages;
         }
 
@@ -330,9 +368,12 @@
         }
 
         function downloadBook() {
-            if (typeof window.royalRenderer !== 'undefined' && currentBookData) {
-                const parsedData = window.royalParser.parse(currentBookData.text, currentBookData.metadata);
-                window.royalRenderer.render(parsedData, currentBookData.metadata);
+            if (typeof window.royalRenderer !== 'undefined' && typeof window.royalParser !== 'undefined' && currentBookData) {
+                const bookText = currentBookData.text || currentBookData.t || '';
+                const parsedData = window.royalParser.parse(bookText, currentBookData);
+                window.royalRenderer.render(parsedData, currentBookData);
+            } else {
+                alert('عذراً، محرك التحميل غير متوفر حالياً.');
             }
         }
 
@@ -340,5 +381,6 @@
             alert("ميزة التعليقات ستكون متاحة قريباً!");
         }
     </script>
+
 </body>
 </html>
