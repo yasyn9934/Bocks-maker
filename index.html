@@ -2496,7 +2496,10 @@ function _pvLoadScript(url, cb) {
                 `;
             }
         }
-        // ══════════════════════════════════════════════════════════════
+    </script>
+</body>
+</html>
+// ══════════════════════════════════════════════════════════════
 // وظائف مشاركة الكتب
 // ══════════════════════════════════════════════════════════════
 let currentShareType = 'perm';
@@ -2570,7 +2573,7 @@ async function generateShareLink() {
         });
         const result = await response.json();
         if (result.success) {
-            const shareUrl = window.location.origin + window.location.pathname.replace('index.html', '') + 'share.html?id=' + result.shareId;
+            const shareUrl = window.location.origin + window.location.pathname.replace('index.html', '') + 's/?id=' + result.shareId;
             document.getElementById('generatedLink').value = shareUrl;
             document.getElementById('generatedLinkArea').style.display = 'block';
             btn.innerText = "تم التوليد بنجاح";
@@ -2593,7 +2596,3 @@ function copyShareLink() {
     document.execCommand('copy');
     alert("تم نسخ الرابط إلى الحافظة!");
 }
-    </script>
-</body>
-</html>
-
