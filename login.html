@@ -67,6 +67,22 @@
         }
         .status-msg { margin-top: 15px; font-size: 12pt; font-weight: bold; min-height: 1.4em; }
 
+        /* ── Avatar Picker ── */
+        .avatar-pick-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; }
+        .avatar-pick-circle {
+            width:80px; height:80px; border-radius:50%;
+            border:2px dashed #b8860b; background:#fafafa;
+            display:flex; align-items:center; justify-content:center;
+            font-size:30pt; cursor:pointer; overflow:hidden; transition:.2s;
+        }
+        .avatar-pick-circle:hover { background:#fff8e1; border-color:#6B8E23; }
+        .avatar-pick-circle img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+        .avatar-pick-hint { font-size:10pt; color:#999; }
+        #regAvatarInput { display:none; }
+        .accountname-preview { font-size:10pt; color:#888; text-align:right; margin-top:-8px; padding-right:4px; }
+        .accountname-preview span { color:#b8860b; font-weight:bold; }
+        .field-small-hint { font-size:9.5pt; color:#aaa; text-align:right; margin-top:-8px; }
+
         /* [FIX] مؤشر المزامنة */
         .sync-indicator {
             display: none;
@@ -96,7 +112,23 @@
 
     <!-- نموذج التسجيل -->
     <div id="registerForm" class="form-section">
-        <input type="text"     id="regUser"  placeholder="اسم المستخدم (مثال: أبو عبد الله)">
+        <!-- صورة الحساب -->
+        <div class="avatar-pick-wrap">
+            <div class="avatar-pick-circle" id="regAvatarCircle"
+                 onclick="document.getElementById('regAvatarInput').click()" title="اختر صورة">
+                👤
+            </div>
+            <span class="avatar-pick-hint">اضغط لإضافة صورة (اختياري)</span>
+            <input type="file" id="regAvatarInput" accept="image/*" onchange="handleRegAvatar(event)">
+        </div>
+        <!-- اسم المستخدم -->
+        <input type="text" id="regUser" placeholder="اسم المستخدم (مثال: أبو عبد الله)" maxlength="40">
+        <!-- اسم الحساب -->
+        <input type="text" id="regAccountName" placeholder="اسم الحساب بالإنجليزية (مثال: abu_ali)"
+               maxlength="30" dir="ltr" style="text-align:left" oninput="previewAccountName()">
+        <div class="accountname-preview">@ <span id="regAccountNamePreview">—</span></div>
+        <div class="field-small-hint">أحرف إنجليزية وأرقام و _ فقط · فريد لكل حساب</div>
+        <!-- البريد وكلمة المرور -->
         <input type="email"    id="regEmail" placeholder="البريد الإلكتروني الحقيقي">
         <input type="password" id="regPass"  placeholder="كلمة المرور">
         <button class="btn btn-primary" id="btnRegister" onclick="requestOTP()">إرسال رمز التحقق</button>
@@ -131,7 +163,31 @@
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVIL8_9oYVEfAIvIlzcQjz9SV1SR2Fni0k2Euo__92mtERHfiPJHnoxQKSkvYM5lB6/exec";
     const INDEX_PAGE = './';
-    let tempRegData  = {};
+    let tempRegData    = {};
+    let regPhotoBase64 = null;
+
+    // ── صورة الحساب ──────────────────────────────────────────
+    function handleRegAvatar(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            showStatus("حجم الصورة يجب أن يكون أقل من 2 ميغابايت", "red"); return;
+        }
+        const reader = new FileReader();
+        reader.onload = ev => {
+            regPhotoBase64 = ev.target.result;
+            const circle = document.getElementById('regAvatarCircle');
+            circle.innerHTML = `<img src="${regPhotoBase64}" alt="">`;
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
+    }
+
+    // ── معاينة اسم الحساب ────────────────────────────────────
+    function previewAccountName() {
+        const val = document.getElementById('regAccountName').value.trim().toLowerCase();
+        document.getElementById('regAccountNamePreview').textContent = val || '—';
+    }
 
     // ── مساعدات الواجهة ─────────────────────────────────────
     function switchForm(formId, title) {
@@ -153,22 +209,29 @@
 
     // ── 1. طلب OTP ─────────────────────────────────────────
     async function requestOTP() {
-        const username = document.getElementById('regUser').value.trim();
-        const email    = document.getElementById('regEmail').value.trim();
-        const password = document.getElementById('regPass').value;
-        const btn      = document.getElementById('btnRegister');
+        const username    = document.getElementById('regUser').value.trim();
+        const accountName = document.getElementById('regAccountName').value.trim().toLowerCase();
+        const email       = document.getElementById('regEmail').value.trim();
+        const password    = document.getElementById('regPass').value;
+        const btn         = document.getElementById('btnRegister');
 
         if (!username || !email || !password)
-            return showStatus("يرجى تعبئة جميع الحقول", "red");
+            return showStatus("يرجى تعبئة جميع الحقول المطلوبة", "red");
+        if (!accountName)
+            return showStatus("يرجى إدخال اسم الحساب (AccountName)", "red");
+        if (!/^[a-zA-Z0-9_]+$/.test(accountName))
+            return showStatus("اسم الحساب: أحرف إنجليزية وأرقام و _ فقط", "red");
+        if (accountName.length < 3)
+            return showStatus("اسم الحساب يجب أن يكون 3 أحرف على الأقل", "red");
 
-        tempRegData = { email, username, password };
+        tempRegData = { email, username, accountName, password, photo: regPhotoBase64 };
         btn.innerText = "جاري الإرسال..."; btn.disabled = true;
         showStatus("نرسل الرمز إلى بريدك...", "blue");
 
         try {
             const res  = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: "send_otp", email, username })
+                body: JSON.stringify({ action: "send_otp", email, username, accountName })
             });
             const data = await res.json();
             if (data.success) {
@@ -196,10 +259,12 @@
             const res  = await fetch(SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify({
-                    action:   "verify_and_register",
-                    email:    tempRegData.email,
-                    username: tempRegData.username,
-                    password: tempRegData.password,
+                    action:      "verify_and_register",
+                    email:       tempRegData.email,
+                    username:    tempRegData.username,
+                    accountName: tempRegData.accountName,
+                    password:    tempRegData.password,
+                    photo:       tempRegData.photo || '',
                     otp
                 })
             });

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تعديل الحساب</title>
+  <style>
+    @font-face { font-family:'Amiri';      src:url('fonts/Amiri-Regular.ttf')  format('truetype'); }
+    @font-face { font-family:'Aref Ruqaa'; src:url('fonts/ArefRuqaa-Bold.ttf') format('truetype'); }
+
+    :root {
+      --gold:#b8860b; --green:#6B8E23; --bg:#f4f6f8;
+      --card:#fff; --text:#333; --border:#eef0f2;
+      --shadow:0 8px 24px rgba(0,0,0,.08);
+      --red:#e74c3c;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Amiri',serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px;}
+
+    /* TOP BAR */
+    .topbar{
+      position:sticky;top:0;z-index:200;background:var(--card);
+      border-bottom:1px solid var(--border);padding:10px 16px;
+      display:flex;align-items:center;justify-content:space-between;
+      box-shadow:0 2px 8px rgba(0,0,0,.06);
+    }
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .topbar-title{font-family:'Aref Ruqaa',serif;font-size:18pt;color:var(--green);}
+    .back-btn{background:none;border:none;cursor:pointer;font-size:20pt;color:#555;padding:4px 8px;border-radius:8px;transition:.2s;}
+    .back-btn:hover{background:#f0f0f0;}
+    .topbar-actions{display:flex;gap:8px;}
+    .btn-save{
+      background:var(--green);color:#fff;border:none;border-radius:10px;
+      padding:8px 20px;font-family:'Amiri',serif;font-size:12pt;cursor:pointer;transition:.2s;
+      display:flex;align-items:center;gap:6px;
+    }
+    .btn-save:hover{background:#5a7a1e;}
+    .btn-save:disabled{background:#aaa;cursor:not-allowed;}
+    .btn-cancel{
+      background:none;border:1.5px solid var(--border);border-radius:10px;
+      padding:8px 16px;font-family:'Amiri',serif;font-size:12pt;cursor:pointer;
+      color:#666;transition:.2s;
+    }
+    .btn-cancel:hover{background:#f0f0f0;}
+
+    /* FORM WRAPPER */
+    .form-wrapper{max-width:680px;margin:20px auto;padding:0 16px;}
+
+    /* SECTION CARD */
+    .section-card{
+      background:var(--card);border-radius:14px;box-shadow:var(--shadow);
+      margin-bottom:16px;overflow:hidden;
+    }
+    .section-head{
+      padding:14px 18px;border-bottom:1px solid var(--border);
+      font-family:'Aref Ruqaa',serif;font-size:14pt;color:var(--green);
+      display:flex;align-items:center;gap:8px;
+    }
+    .section-body{padding:18px;}
+
+    /* AVATAR PICKER */
+    .avatar-picker{display:flex;flex-direction:column;align-items:center;gap:14px;}
+    .avatar-preview{
+      width:100px;height:100px;border-radius:50%;border:3px solid var(--border);
+      background:#eee;display:flex;align-items:center;justify-content:center;
+      font-size:40pt;overflow:hidden;position:relative;cursor:pointer;
+    }
+    .avatar-preview img{width:100%;height:100%;object-fit:cover;}
+    .avatar-overlay{
+      position:absolute;inset:0;background:rgba(0,0,0,.45);border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;transition:.2s;color:#fff;font-size:22pt;
+    }
+    .avatar-preview:hover .avatar-overlay{opacity:1;}
+    .avatar-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+    .avatar-btn{
+      padding:7px 16px;border-radius:10px;border:1.5px solid var(--border);
+      background:none;font-family:'Amiri',serif;font-size:11pt;cursor:pointer;
+      color:#555;transition:.2s;display:flex;align-items:center;gap:6px;
+    }
+    .avatar-btn:hover{background:#f0f0f0;}
+    .avatar-btn.primary{background:var(--green);color:#fff;border-color:var(--green);}
+    .avatar-btn.primary:hover{background:#5a7a1e;}
+    #avatarInput{display:none;}
+
+    /* COLOR PICKER */
+    .color-picker-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+    .color-swatch{
+      width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;
+      transition:.2s;flex-shrink:0;
+    }
+    .color-swatch.selected{border-color:var(--text);transform:scale(1.15);}
+    .color-custom{display:flex;align-items:center;gap:8px;}
+    .color-custom input[type=color]{
+      width:36px;height:36px;border-radius:50%;border:none;padding:0;cursor:pointer;
+      background:none;outline:none;
+    }
+
+    /* FORM FIELDS */
+    .field-group{margin-bottom:16px;}
+    .field-label{font-size:11pt;color:#555;margin-bottom:6px;display:block;}
+    .field-label span.required{color:var(--red);margin-right:3px;}
+    .field-hint{font-size:9.5pt;color:#aaa;margin-top:4px;}
+    .field-error{font-size:9.5pt;color:var(--red);margin-top:4px;display:none;}
+
+    input[type=text],input[type=number],textarea,select{
+      width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;
+      font-family:'Amiri',serif;font-size:12pt;color:var(--text);
+      background:var(--bg);transition:.2s;outline:none;
+    }
+    input[type=text]:focus,input[type=number]:focus,textarea:focus,select:focus{
+      border-color:var(--green);background:var(--card);
+      box-shadow:0 0 0 3px rgba(107,142,35,.12);
+    }
+    input.invalid,textarea.invalid{border-color:var(--red);}
+    textarea{resize:vertical;min-height:80px;}
+
+    /* ACCOUNTNAME PREVIEW */
+    .accountname-preview{
+      display:flex;align-items:center;gap:6px;margin-top:6px;
+      font-size:10.5pt;color:#888;
+    }
+    .accountname-at{color:var(--gold);}
+
+    /* GENDER RADIO */
+    .gender-options{display:flex;gap:10px;flex-wrap:wrap;}
+    .gender-option{
+      display:flex;align-items:center;gap:7px;cursor:pointer;
+      padding:8px 16px;border:1.5px solid var(--border);border-radius:10px;
+      transition:.2s;flex:1;min-width:100px;justify-content:center;
+    }
+    .gender-option:hover{border-color:var(--green);}
+    .gender-option input{display:none;}
+    .gender-option.selected{background:var(--green);color:#fff;border-color:var(--green);}
+
+    /* SOCIAL LINKS */
+    .social-row{
+      display:flex;align-items:center;gap:10px;margin-bottom:10px;
+    }
+    .social-icon{font-size:22pt;flex-shrink:0;width:36px;text-align:center;}
+    .social-row input{flex:1;}
+    .social-label{font-size:10pt;color:#888;min-width:60px;}
+
+    /* ONLINE STATUS */
+    .sync-status{
+      position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+      background:#2c3e50;color:#fff;padding:10px 20px;border-radius:20px;
+      font-size:11pt;box-shadow:0 4px 16px rgba(0,0,0,.3);
+      transition:.4s;opacity:0;z-index:300;pointer-events:none;
+    }
+    .sync-status.show{opacity:1;}
+    .sync-status.success{background:#27ae60;}
+    .sync-status.error{background:#e74c3c;}
+
+    /* SPINNER */
+    .spinner{
+      display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.5);
+      border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-right">
+    <button class="back-btn" onclick="cancelEdit()">&#8594;</button>
+    <span class="topbar-title">تعديل الحساب</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn-cancel" onclick="cancelEdit()">إلغاء</button>
+    <button class="btn-save" id="saveBtn" onclick="saveAccount()">
+      <span id="saveBtnIcon">💾</span>
+      <span id="saveBtnText">حفظ</span>
+    </button>
+  </div>
+</div>
+
+<div class="form-wrapper">
+
+  <!-- ── صورة الحساب ── -->
+  <div class="section-card">
+    <div class="section-head">🖼️ صورة الحساب</div>
+    <div class="section-body">
+      <div class="avatar-picker">
+        <div class="avatar-preview" id="avatarPreview" onclick="document.getElementById('avatarInput').click()">
+          <div class="avatar-overlay">📷</div>
+        </div>
+        <div class="avatar-actions">
+          <button class="avatar-btn primary" onclick="document.getElementById('avatarInput').click()">📷 تغيير الصورة</button>
+          <button class="avatar-btn" onclick="removeAvatar()">🗑️ حذف الصورة</button>
+        </div>
+        <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarChange(event)">
+      </div>
+    </div>
+  </div>
+
+  <!-- ── بيانات الحساب الأساسية ── -->
+  <div class="section-card">
+    <div class="section-head">👤 البيانات الأساسية</div>
+    <div class="section-body">
+
+      <!-- اسم المستخدم -->
+      <div class="field-group">
+        <label class="field-label">اسم المستخدم <span class="required">*</span></label>
+        <input type="text" id="fieldUsername" placeholder="مثال: أبو عبد الله" maxlength="40"
+               oninput="validateUsername()">
+        <div class="field-error" id="errUsername"></div>
+      </div>
+
+      <!-- اسم الحساب (AccountName) -->
+      <div class="field-group">
+        <label class="field-label">اسم الحساب <span class="required">*</span></label>
+        <input type="text" id="fieldAccountName" placeholder="مثال: abu_abdallah"
+               maxlength="30" oninput="validateAccountName()" dir="ltr"
+               style="text-align:left">
+        <div class="accountname-preview">
+          <span class="accountname-at">@</span>
+          <span id="accountNameLive">—</span>
+        </div>
+        <div class="field-hint">يُستخدم في رابط الملف الشخصي. أحرف إنجليزية وأرقام و _ فقط.</div>
+        <div class="field-error" id="errAccountName"></div>
+      </div>
+
+      <!-- الوصف (Bio) -->
+      <div class="field-group">
+        <label class="field-label">الوصف</label>
+        <textarea id="fieldBio" placeholder="اكتب نبذة عن نفسك..." maxlength="200"></textarea>
+        <div class="field-hint"><span id="bioCount">0</span> / 200 حرف</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── لون بطاقة الحساب ── -->
+  <div class="section-card">
+    <div class="section-head">🎨 لون بطاقة الحساب</div>
+    <div class="section-body">
+      <div class="color-picker-wrap" id="colorSwatches"></div>
+      <div class="color-custom" style="margin-top:12px">
+        <span style="font-size:11pt;color:#555">لون مخصص:</span>
+        <input type="color" id="customColor" oninput="selectCustomColor(this.value)">
+        <span id="customColorHex" style="font-size:10pt;color:#888;font-family:monospace">#2c3e50</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── المعلومات الشخصية ── -->
+  <div class="section-card">
+    <div class="section-head">📋 المعلومات الشخصية</div>
+    <div class="section-body">
+
+      <!-- العمر -->
+      <div class="field-group">
+        <label class="field-label">العمر</label>
+        <input type="number" id="fieldAge" placeholder="مثال: 25" min="1" max="120" style="max-width:180px">
+      </div>
+
+      <!-- الجنس -->
+      <div class="field-group">
+        <label class="field-label">الجنس</label>
+        <div class="gender-options">
+          <label class="gender-option" id="gMale"       onclick="selectGender('male')">
+            <input type="radio" name="gender" value="male"> 👨 ذكر
+          </label>
+          <label class="gender-option" id="gFemale"     onclick="selectGender('female')">
+            <input type="radio" name="gender" value="female"> 👩 أنثى
+          </label>
+          <label class="gender-option" id="gPreferNot"  onclick="selectGender('prefer_not')">
+            <input type="radio" name="gender" value="prefer_not"> 🤐 لا أودّ ذكره
+          </label>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── حساباتي ── -->
+  <div class="section-card">
+    <div class="section-head">🔗 حساباتي على المنصات</div>
+    <div class="section-body">
+
+      <div class="social-row">
+        <span class="social-icon">▶️</span>
+        <span class="social-label">يوتيوب</span>
+        <input type="text" id="socialYoutube" placeholder="https://youtube.com/@channel" dir="ltr">
+      </div>
+
+      <div class="social-row">
+        <span class="social-icon">✈️</span>
+        <span class="social-label">تيليجرام</span>
+        <input type="text" id="socialTelegram" placeholder="https://t.me/username" dir="ltr">
+      </div>
+
+      <div class="social-row">
+        <span class="social-icon">🐦</span>
+        <span class="social-label">X (تويتر)</span>
+        <input type="text" id="socialTwitter" placeholder="https://x.com/username" dir="ltr">
+      </div>
+
+      <div class="social-row">
+        <span class="social-icon">📸</span>
+        <span class="social-label">إنستغرام</span>
+        <input type="text" id="socialInstagram" placeholder="https://instagram.com/username" dir="ltr">
+      </div>
+
+      <div class="social-row">
+        <span class="social-icon">🔗</span>
+        <span class="social-label">رابط آخر</span>
+        <input type="text" id="socialOther" placeholder="https://..." dir="ltr">
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /form-wrapper -->
+
+<!-- STATUS TOAST -->
+<div class="sync-status" id="syncStatus"></div>
+
+<script src="auth.js"></script>
+<script>
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let currentUser = JSON.parse(localStorage.getItem('royal_user')) || {};
+let pendingPhoto = null;     // base64 of new photo (not yet saved)
+let selectedColor = '#2c3e50';
+let selectedGender = '';
+let isDirty = false;         // track unsaved changes
+
+const PRESET_COLORS = [
+  '#2c3e50','#1a1a2e','#16213e','#0f3460',
+  '#6B8E23','#27ae60','#b8860b','#e67e22',
+  '#8e44ad','#c0392b','#2980b9','#16a085',
+];
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (currentUser.role !== 'member') {
+    showToast('يجب تسجيل الدخول أولاً', 'error');
+    setTimeout(() => window.location.href = 'login.html', 1500);
+    return;
+  }
+  loadCurrentData();
+  buildColorSwatches();
+  trackChanges();
+});
+
+function loadCurrentData() {
+  const u = currentUser;
+
+  // Avatar
+  const av = document.getElementById('avatarPreview');
+  if (u.profilePhoto) {
+    av.innerHTML = `<img src="${u.profilePhoto}" alt=""><div class="avatar-overlay">📷</div>`;
+  } else {
+    av.innerHTML = `<span style="font-size:40pt">👤</span><div class="avatar-overlay">📷</div>`;
+  }
+
+  // Fields
+  document.getElementById('fieldUsername').value    = u.username    || '';
+  document.getElementById('fieldAccountName').value = u.accountName || '';
+  document.getElementById('accountNameLive').textContent = u.accountName || '—';
+  document.getElementById('fieldBio').value          = u.bio        || '';
+  document.getElementById('fieldAge').value          = u.age        || '';
+  bioCountUpdate();
+
+  // Color
+  selectedColor = u.cardColor || '#2c3e50';
+  document.getElementById('customColor').value    = selectedColor;
+  document.getElementById('customColorHex').textContent = selectedColor;
+
+  // Gender
+  if (u.gender) selectGender(u.gender);
+
+  // Socials
+  const s = u.socials || {};
+  document.getElementById('socialYoutube').value   = s.youtube   || '';
+  document.getElementById('socialTelegram').value  = s.telegram  || '';
+  document.getElementById('socialTwitter').value   = s.twitter   || '';
+  document.getElementById('socialInstagram').value = s.instagram || '';
+  document.getElementById('socialOther').value     = s.other     || '';
+}
+
+function buildColorSwatches() {
+  const wrap = document.getElementById('colorSwatches');
+  wrap.innerHTML = PRESET_COLORS.map(color =>
+    `<div class="color-swatch ${color===selectedColor?'selected':''}"
+         style="background:${color}" title="${color}"
+         onclick="selectPresetColor('${color}', this)"></div>`
+  ).join('');
+}
+
+function trackChanges() {
+  document.querySelectorAll('input,textarea,select').forEach(el =>
+    el.addEventListener('input', () => isDirty = true)
+  );
+}
+
+// ─────────────────────────────────────────────
+// AVATAR
+// ─────────────────────────────────────────────
+function handleAvatarChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { showToast('حجم الصورة يجب أن يكون أقل من 2 ميغابايت', 'error'); return; }
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    pendingPhoto = ev.target.result;
+    const av = document.getElementById('avatarPreview');
+    av.innerHTML = `<img src="${pendingPhoto}" alt=""><div class="avatar-overlay">📷</div>`;
+    isDirty = true;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function removeAvatar() {
+  if (!confirm('هل تريد حذف صورة الحساب؟')) return;
+  pendingPhoto = '';  // empty string = remove
+  const av = document.getElementById('avatarPreview');
+  av.innerHTML = `<span style="font-size:40pt">👤</span><div class="avatar-overlay">📷</div>`;
+  isDirty = true;
+}
+
+// ─────────────────────────────────────────────
+// COLOR
+// ─────────────────────────────────────────────
+function selectPresetColor(color, el) {
+  selectedColor = color;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('customColor').value = color;
+  document.getElementById('customColorHex').textContent = color;
+  isDirty = true;
+}
+
+function selectCustomColor(val) {
+  selectedColor = val;
+  document.getElementById('customColorHex').textContent = val;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  isDirty = true;
+}
+
+// ─────────────────────────────────────────────
+// GENDER
+// ─────────────────────────────────────────────
+function selectGender(val) {
+  selectedGender = val;
+  ['gMale','gFemale','gPreferNot'].forEach(id => document.getElementById(id).classList.remove('selected'));
+  const map = { male:'gMale', female:'gFemale', prefer_not:'gPreferNot' };
+  if (map[val]) document.getElementById(map[val]).classList.add('selected');
+  isDirty = true;
+}
+
+// ─────────────────────────────────────────────
+// BIO COUNTER
+// ─────────────────────────────────────────────
+document.getElementById('fieldBio').addEventListener('input', bioCountUpdate);
+function bioCountUpdate() {
+  document.getElementById('bioCount').textContent =
+    document.getElementById('fieldBio').value.length;
+}
+
+// ─────────────────────────────────────────────
+// VALIDATION
+// ─────────────────────────────────────────────
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function validateUsername() {
+  const val = document.getElementById('fieldUsername').value.trim();
+  if (!val) { showError('errUsername','اسم المستخدم مطلوب'); return false; }
+  if (val.length < 2) { showError('errUsername','الاسم قصير جداً'); return false; }
+  showError('errUsername','');
+  return true;
+}
+
+function validateAccountName() {
+  const val = document.getElementById('fieldAccountName').value.trim();
+  document.getElementById('accountNameLive').textContent = val || '—';
+  if (!val) { showError('errAccountName','اسم الحساب مطلوب'); return false; }
+  if (!/^[a-zA-Z0-9_]+$/.test(val)) {
+    showError('errAccountName','يُسمح فقط بالأحرف الإنجليزية والأرقام و _');
+    return false;
+  }
+  if (val.length < 3) { showError('errAccountName','الاسم قصير جداً (3 أحرف على الأقل)'); return false; }
+  showError('errAccountName','');
+  return true;
+}
+
+// ─────────────────────────────────────────────
+// SAVE
+// ─────────────────────────────────────────────
+async function saveAccount() {
+  if (!validateUsername() | !validateAccountName()) return;  // | not || to run both
+
+  const btn  = document.getElementById('saveBtn');
+  const icon = document.getElementById('saveBtnIcon');
+  const text = document.getElementById('saveBtnText');
+  btn.disabled = true;
+  icon.innerHTML = '<span class="spinner"></span>';
+  text.textContent = 'جاري الحفظ...';
+
+  // Build updated user object
+  const updated = { ...currentUser };
+  updated.username    = document.getElementById('fieldUsername').value.trim();
+  updated.accountName = document.getElementById('fieldAccountName').value.trim().toLowerCase();
+  updated.bio         = document.getElementById('fieldBio').value.trim();
+  updated.age         = document.getElementById('fieldAge').value || '';
+  updated.gender      = selectedGender || '';
+  updated.cardColor   = selectedColor;
+
+  // Photo: pendingPhoto==='' means remove, string=new, null=unchanged
+  if (pendingPhoto === '') {
+    updated.profilePhoto = '';
+  } else if (pendingPhoto) {
+    updated.profilePhoto = pendingPhoto;
+  }
+
+  updated.socials = {
+    youtube:   document.getElementById('socialYoutube').value.trim(),
+    telegram:  document.getElementById('socialTelegram').value.trim(),
+    twitter:   document.getElementById('socialTwitter').value.trim(),
+    instagram: document.getElementById('socialInstagram').value.trim(),
+    other:     document.getElementById('socialOther').value.trim(),
+  };
+
+  // Save to localStorage immediately
+  localStorage.setItem('royal_user', JSON.stringify(updated));
+  currentUser = updated;
+  isDirty = false;
+
+  // Save to Drive (if online)
+  if (navigator.onLine && updated.role === 'member') {
+    try {
+      await fetch(AUTH_CONFIG.SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action:   'update_profile',
+          userId:   updated.id,
+          userName: updated.username,
+          profile:  updated,
+        })
+      });
+      showToast('✅ تم الحفظ ومزامنة بياناتك', 'success');
+    } catch (_) {
+      // Offline or network error → queue for later
+      localStorage.setItem('royal_pending_profile_sync', 'true');
+      showToast('💾 تم الحفظ محلياً. ستتم المزامنة عند الاتصال', '');
+    }
+  } else {
+    // Offline → queue
+    localStorage.setItem('royal_pending_profile_sync', 'true');
+    showToast('💾 تم الحفظ محلياً. ستتم المزامنة عند الاتصال', '');
+  }
+
+  btn.disabled = false;
+  icon.textContent = '✅';
+  text.textContent = 'تم الحفظ';
+  setTimeout(() => {
+    icon.textContent = '💾';
+    text.textContent = 'حفظ';
+  }, 2000);
+
+  // Return to profile after short delay
+  setTimeout(() => window.location.href = 'profile.html', 1200);
+}
+
+// ─────────────────────────────────────────────
+// CANCEL
+// ─────────────────────────────────────────────
+function cancelEdit() {
+  if (isDirty && !confirm('لديك تغييرات غير محفوظة. هل تريد المغادرة؟')) return;
+  history.back();
+}
+
+// ─────────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────────
+function showToast(msg, type) {
+  const el = document.getElementById('syncStatus');
+  el.textContent = msg;
+  el.className = 'sync-status show' + (type ? ' '+type : '');
+  setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// ─────────────────────────────────────────────
+// AUTO SYNC WHEN BACK ONLINE
+// ─────────────────────────────────────────────
+window.addEventListener('online', async () => {
+  if (localStorage.getItem('royal_pending_profile_sync') !== 'true') return;
+  const u = JSON.parse(localStorage.getItem('royal_user') || '{}');
+  if (!u.id || u.role !== 'member') return;
+  try {
+    await fetch(AUTH_CONFIG.SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action:'update_profile', userId:u.id, userName:u.username, profile:u })
+    });
+    localStorage.removeItem('royal_pending_profile_sync');
+    showToast('✅ تمت مزامنة بياناتك تلقائياً', 'success');
+  } catch(_) {}
+});
+</script>
+</body>
+</html>
