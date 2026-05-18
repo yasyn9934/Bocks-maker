@@ -98,6 +98,7 @@ async function startSyncProcess() {
             body: JSON.stringify({
                 action: "sync_library",
                 userId: userId,
+                userName: currentUser.username, // ضروري لتسمية مجلد المستخدم بشكل صحيح
                 localBooks: localBooks // سنرسل النسخة المحلية كاملة ليقوم السيرفر بالمقارنة
             })
         });
