@@ -324,7 +324,7 @@
 // ─────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────
-let currentUser = JSON.parse(localStorage.getItem('royal_user')) || {};
+// currentUser مُعرَّف في auth.js — لا نُعيد تعريفه
 let pendingPhoto = null;     // base64 of new photo (not yet saved)
 let selectedColor = '#2c3e50';
 let selectedGender = '';
@@ -348,6 +348,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadCurrentData();
   buildColorSwatches();
   trackChanges();
+  // ربط عداد الوصف بعد تحميل DOM
+  document.getElementById('fieldBio').addEventListener('input', bioCountUpdate);
 });
 
 function loadCurrentData() {
@@ -461,7 +463,6 @@ function selectGender(val) {
 // ─────────────────────────────────────────────
 // BIO COUNTER
 // ─────────────────────────────────────────────
-document.getElementById('fieldBio').addEventListener('input', bioCountUpdate);
 function bioCountUpdate() {
   document.getElementById('bioCount').textContent =
     document.getElementById('fieldBio').value.length;
