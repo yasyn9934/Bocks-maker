@@ -386,7 +386,7 @@ let categories   = JSON.parse(localStorage.getItem('royal_categories_list')|| '[
 let deletedBooks = JSON.parse(localStorage.getItem('royal_deleted_books')  || '[]');
 let viewedShares = JSON.parse(localStorage.getItem('royal_viewed_shares')  || '[]');
 let notifications= JSON.parse(localStorage.getItem('royal_notifications')  || '[]');
-let currentUser  = JSON.parse(localStorage.getItem('royal_user')) || { role:'guest', username:'زائر', id:'guest_tmp' };
+// currentUser مُعرَّف بالفعل في auth.js — لا نُعيد تعريفه
 
 let currentCatTab   = 'all';
 let currentShareTab = 'mine';
