@@ -108,6 +108,8 @@ async function startSyncProcess() {
         if (result.success) {
             // تحديث المكتبة المحلية بالبيانات المدمجة القادمة من السيرفر
             localStorage.setItem('royal_books_list', JSON.stringify(result.mergedBooks));
+            // [FIX] مسح الكتاب المعلّق الذي كان ينتظر الإرسال
+            localStorage.removeItem('pending_sync_book');
             alert("تمت المزامنة بنجاح! تم تحديث الكتب السحابية وجلب الجديد منها.");
             if (typeof renderBooks === "function") renderBooks(); // لتحديث الواجهة فوراً
         }
