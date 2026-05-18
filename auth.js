@@ -4,7 +4,7 @@
 
 const AUTH_CONFIG = {
     // الرابط الخاص بك الذي نشرته مؤخراً
-    SCRIPT_URL: "AKfycbzVIL8_9oYVEfAIvIlzcQjz9SV1SR2Fni0k2Euo__92mtERHfiPJHnoxQKSkvYM5lB6",
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzVIL8_9oYVEfAIvIlzcQjz9SV1SR2Fni0k2Euo__92mtERHfiPJHnoxQKSkvYM5lB6/exec",
     GUEST_LIMIT: 1 
 };
 
@@ -26,9 +26,16 @@ function canAddMoreBooks() {
  * تسجيل الخروج
  */
 function logoutUser() {
-    if (confirm("هل أنت متأكد من تسجيل الخروج؟")) {
+    // [FIX] تحذير إن كان هناك كتاب معلّق لم يُرفع بعد
+    const hasPending = !!localStorage.getItem('pending_sync_book');
+    const msg = hasPending
+        ? "تنبيه: لديك تغييرات لم تُحفظ في السحابة بعد. هل تريد الخروج وفقدانها؟"
+        : "هل أنت متأكد من تسجيل الخروج؟";
+
+    if (confirm(msg)) {
         localStorage.removeItem('royal_user');
-        localStorage.removeItem('royal_books_list'); // تنظيف المكتبة لضمان الخصوصية
+        localStorage.removeItem('royal_books_list');
+        localStorage.removeItem('pending_sync_book'); // [FIX] تنظيف الكتاب المعلّق أيضاً
         window.location.href = 'index.html';
     }
 }
@@ -62,13 +69,16 @@ window.addEventListener('online', () => {
 function showSyncPrompt() {
     // التحقق مما إذا كان المستخدم قد اختار "لا تظهر مجدداً"
     if (localStorage.getItem('hideSyncPrompt') === 'true') return;
+    // [FIX] منع تكرار النافذة لو ظهرت مسبقاً (offline/online متكرر)
+    if (document.getElementById('syncNotice')) return;
 
     const syncDiv = document.createElement('div');
     syncDiv.id = 'syncNotice';
-    syncDiv.style = "position:fixed; bottom:20px; left:20px; background:white; padding:20px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.3); z-index:10001; border-right:5px solid var(--royal-gold); direction:rtl;";
+    // [FIX] استبدال var(--css-variable) بقيم ثابتة — المتغيرات قد لا تكون معرّفة في كل الصفحات
+    syncDiv.style = "position:fixed; bottom:20px; left:20px; background:white; padding:20px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.3); z-index:10001; border-right:5px solid #b8860b; direction:rtl;";
     syncDiv.innerHTML = `
         <p>أنت الآن متصل بالإنترنت، هل تريد مزامنة هذه النسخة ببياناتك على الموقع السحابي؟</p>
-        <button onclick="startSyncProcess()" style="background:var(--royal-green); color:white; border:none; padding:5px 15px; cursor:pointer;">نعم، أريد المزامنة</button>
+        <button onclick="startSyncProcess()" style="background:#6B8E23; color:white; border:none; padding:5px 15px; cursor:pointer;">نعم، أريد المزامنة</button>
         <button onclick="document.getElementById('syncNotice').remove()" style="background:#ccc; border:none; padding:5px 15px; cursor:pointer;">ليس الآن</button>
         <br><br>
         <label style="font-size:12px; color:#666;">

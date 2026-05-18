@@ -91,7 +91,7 @@
     </div>
 
     <script>
-        let indexPage = "./"
+        let indexPage = 'index.html'; // [FIX] كان "./" — يجب التطابق مع login()
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVIL8_9oYVEfAIvIlzcQjz9SV1SR2Fni0k2Euo__92mtERHfiPJHnoxQKSkvYM5lB6/exec";
         let tempRegData = {}; // لحفظ البيانات مؤقتاً بين خطوتي التسجيل
 
@@ -116,6 +116,10 @@
             const btn = document.getElementById('btnRegister');
 
             if (!username || !email || !password) return showStatus("يرجى تعبئة جميع الحقول", "red");
+            // [FIX] التحقق من صيغة الإيميل (onclick يتجاوز تحقق المتصفح)
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showStatus("صيغة البريد الإلكتروني غير صحيحة", "red");
+            // [FIX] التحقق من طول كلمة المرور
+            if (password.length < 6) return showStatus("كلمة المرور يجب أن تكون 6 أحرف على الأقل", "red");
 
             tempRegData = { email, username, password };
             
@@ -147,6 +151,8 @@
             const btn = document.getElementById('btnVerify');
 
             if (!otp) return showStatus("يرجى إدخال الرمز", "red");
+            // [FIX] التحقق من أن الرمز مكوّن من 6 أرقام
+            if (!/^\d{6}$/.test(otp)) return showStatus("الرمز يجب أن يكون 6 أرقام", "red");
 
             btn.innerText = "جاري الإنشاء..."; btn.disabled = true;
 
@@ -164,9 +170,12 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    showStatus(data.message, "green");
-                    localStorage.setItem('royal_user', JSON.stringify(data.userData));
+                    showStatus("تم إنشاء الحساب بنجاح! جاري التحويل...", "green");
+                    localStorage.setItem('royal_user', JSON.stringify(data.user));
+                    // [FIX] إبقاء الزر معطّلاً حتى التحويل (منع الضغط المكرر)
+                    btn.innerText = "جاري التحويل...";
                     setTimeout(() => window.location.href = indexPage, 1500);
+                    return; // لا نُعيد تفعيل الزر بعد النجاح
                 } else {
                     showStatus(data.message, "red");
                 }
@@ -183,6 +192,8 @@
             const btn = document.getElementById('btnLogin');
 
             if (!email || !password) return showStatus("أدخل الإيميل وكلمة المرور", "red");
+            // [FIX] التحقق من صيغة الإيميل
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showStatus("صيغة البريد الإلكتروني غير صحيحة", "red");
 
             btn.innerText = "جاري الدخول..."; btn.disabled = true;
             showStatus("جاري التحقق من البيانات...", "blue");
@@ -195,11 +206,11 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    localStorage.setItem('royal_user', JSON.stringify(data.userData));
+                    localStorage.setItem('royal_user', JSON.stringify(data.user));
                     showStatus("تم الدخول! جاري مزامنة مكتبتك...", "green");
                     
                     // جلب الكتب من درايف بعد الدخول
-                    await fetchUserLibrary(data.userData.id, data.userData.username);
+                    await fetchUserLibrary(data.user.id, data.user.username);
                     window.location.href = 'index.html';
                 } else {
                     showStatus(data.message, "red");
@@ -210,7 +221,7 @@
             btn.innerText = "تسجيل الدخول"; btn.disabled = false;
         }
 
-        // دالة مساعدة لجلب الكتب
+        // دالة مساعدة لجلب الكتب ودمجها مع المحلية [FIX]
         async function fetchUserLibrary(userId, username) {
             try {
                 const res = await fetch(SCRIPT_URL, {
@@ -219,7 +230,23 @@
                 });
                 const data = await res.json();
                 if (data.success && data.books) {
-                    localStorage.setItem('royal_books_list', JSON.stringify(data.books));
+                    // [FIX] دمج الكتب السحابية مع المحلية بدل استبدالها
+                    // (يحمي كتب الزائر التي لم تُرفع بعد)
+                    const localBooks  = JSON.parse(localStorage.getItem('royal_books_list') || '[]');
+                    const mergedMap   = {};
+                    // أولاً: الكتب السحابية كأساس
+                    data.books.forEach(b => { mergedMap[b.id] = b; });
+                    // ثانياً: أضف أي كتاب محلي غير موجود في السحابة
+                    localBooks.forEach(lb => {
+                        if (!mergedMap[lb.id]) mergedMap[lb.id] = lb;
+                        else {
+                            // إن كانت النسخة المحلية أحدث فاحتفظ بها
+                            if ((lb.updatedAt || 0) > (mergedMap[lb.id].updatedAt || 0)) {
+                                mergedMap[lb.id] = lb;
+                            }
+                        }
+                    });
+                    localStorage.setItem('royal_books_list', JSON.stringify(Object.values(mergedMap)));
                 }
             } catch (e) {
                 console.error("فشل مزامنة المكتبة");
